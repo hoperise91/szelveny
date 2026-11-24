@@ -65,6 +65,18 @@
 
 All downloads write manifests (licence, terms URL and date, attribution). NAP fetches are weekly at most, cached, and respect CLAUDE.md's access rules.
 
+**Status 2026-11-24:**
+| Source | State |
+|---|---|
+| NAP (13 packages) | ✅ `make nap` → `raw.nap_*`, weekly in CI, last good copy kept |
+| OpenStreetMap (Geofabrik HU) | ✅ `raw.osm_*`, 20 counties by ISO tag |
+| Overture transportation | ✅ `raw.overture_*` (ODbL; incl. TomTom data) |
+| KSH STADAT 24.1.2.1, 24.1.1.30 | ✅ `raw.ksh_county_roads`, `raw.ksh_network` (CC BY 4.0) |
+| kozadatportal: Magyar Közút tables | ✅ `data/raw/kozut_nc/`, latest year of 7 datasets, **CC BY-NC 2.0**, kept separate; static, fetched once |
+| Eurostat GISCO (NUTS, LAU) | ⏸ **non-commercial only** per the GISCO download terms: not used; waiting for the owner. OSM gives counties already |
+| EuroRegionalMap | ⏸ needs the owner's `ERM_TOKEN` in `.env`; licence page to confirm |
+| TENtec | ⏸ the public page offers PDF maps only, no GIS download or reuse terms found |
+
 **NAP download method (owner, 2026-11-24):** `nap.py` may call each subscribed package's documented WFS link (the "Adatelérés" URLs on its metadata page; layer names in `data/raw/nap/manifest.json`) directly, weekly at most, with caching and backoff. No other GeoServer/WFS queries without asking.
 
 ## Phase 3: Reference network

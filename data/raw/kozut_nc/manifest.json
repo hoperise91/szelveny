@@ -1,0 +1,85 @@
+{
+  "source_id": "kozut_nc",
+  "name": "Magyar Közút annual road tables (kozadatportal.hu): local roads, pavement condition, information tables",
+  "url": "https://kozadatportal.hu/organization/magyar-kozut-nonprofit-zrt",
+  "licence": "CC-BY-NC-2.0 (non-commercial)",
+  "attribution": "Forrás: Magyar Közút Nonprofit Zrt. (kozadatportal.hu), CC BY-NC 2.0",
+  "version": "latest year per dataset (2020-2021); portal metadata 2022",
+  "retrieved_at": "2026-11-24T12:22:13+00:00",
+  "files": [
+    "telepules_kategoria_szerint_2020.xlsx",
+    "terulet_es_atlagszelesseg_2020.xlsx",
+    "kiepitett_kiepitetlen_2020.xlsx",
+    "hidak_2020.xlsx",
+    "belterulet_kulterulet_2020.xlsx",
+    "orszagos_kozuthalozat_informacios_eredmenytablai_2020_12_31.pdf",
+    "orszagos_kozutak_burkolatallapot_adatai_2021_12_31.xls"
+  ],
+  "non_commercial": true,
+  "keep_separate": "CLAUDE.md: keep separate from other layers and label non-commercial in downloads; context and statistics only",
+  "terms_url": "http://creativecommons.org/licenses/by-nc/2.0/",
+  "terms_date": "2026-11-24",
+  "terms_copy": [
+    "docs/legal/CC-BY-NC-2.0_2026-11-24.html",
+    "docs/legal/kozadatportal_Magyar_Kozut_dataset_2026-11-24.html"
+  ],
+  "datasets": [
+    {
+      "title": "Önkormányzati utak adatai - Helyi közutak hossza: Település kategória",
+      "kozadatportal": "https://kozadatportal.hu/dataset/d433a4c5-f9b8-4bd9-9567-4b15cc4d3450",
+      "resource": "Önkormányzati utak adatai - Helyi közutak hossza: Település kategória 2020",
+      "year": 2020,
+      "file": "telepules_kategoria_szerint_2020.xlsx",
+      "metadata_modified": "2022-10-21"
+    },
+    {
+      "title": "Önkormányzati utak adatai- Helyi közutak területe és átlagszélessége",
+      "kozadatportal": "https://kozadatportal.hu/dataset/c0c0644a-6350-40b1-91c5-b44629cffe22",
+      "resource": "Önkormányzati utak adatai- Helyi közutak területe és átlagszélessége 2020",
+      "year": 2020,
+      "file": "terulet_es_atlagszelesseg_2020.xlsx",
+      "metadata_modified": "2022-08-31"
+    },
+    {
+      "title": "Önkormányzati utak adatai - Helyi közutak hossza:  Kiépített-Kiépítetlen",
+      "kozadatportal": "https://kozadatportal.hu/dataset/df0691c7-4f28-44e2-9e7b-9d96a33d4340",
+      "resource": "Önkormányzati utak adatai - Helyi közutak hossza:  Kiépített-Kiépítetlen 2020",
+      "year": 2020,
+      "file": "kiepitett_kiepitetlen_2020.xlsx",
+      "metadata_modified": "2022-08-31"
+    },
+    {
+      "title": "Önkormányzati utak adatai - Hidak",
+      "kozadatportal": "https://kozadatportal.hu/dataset/5531a488-8e1d-4f20-8f26-0f292ce5c1a6",
+      "resource": "Önkormányzati utak adatai - Hidak 2020",
+      "year": 2020,
+      "file": "hidak_2020.xlsx",
+      "metadata_modified": "2022-08-31"
+    },
+    {
+      "title": "Önkormányzati utak adatai - Helyi közutak hossza: Belterület-Külterület",
+      "kozadatportal": "https://kozadatportal.hu/dataset/c121b5ed-ce15-4971-9f43-21d787561e86",
+      "resource": "Önkormányzati utak adatai - Helyi közutak hossza: Belterület-Külterület 2020",
+      "year": 2020,
+      "file": "belterulet_kulterulet_2020.xlsx",
+      "metadata_modified": "2022-08-31"
+    },
+    {
+      "title": "Országos közúthálózat információs eredménytáblái",
+      "kozadatportal": "https://kozadatportal.hu/dataset/1cd47c4a-35fe-4604-b263-80a85cc776bc",
+      "resource": "Országos közúthálózat információs eredménytáblái 2020",
+      "year": 2020,
+      "file": "orszagos_kozuthalozat_informacios_eredmenytablai_2020_12_31.pdf",
+      "metadata_modified": "2022-08-31"
+    },
+    {
+      "title": "Országos közutak burkolatállapot adatai",
+      "kozadatportal": "https://kozadatportal.hu/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963",
+      "resource": "Országos közutak burkolatállapot adatai 2021",
+      "year": 2076,
+      "file": "orszagos_kozutak_burkolatallapot_adatai_2021_12_31.xls",
+      "metadata_modified": "2022-08-30"
+    }
+  ],
+  "note": "Static archives (newest file 2021): fetched once, not part of the weekly refresh."
+}

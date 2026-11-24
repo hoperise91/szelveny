@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<!--[if IE 9]> <html lang="hu" class="ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="hu"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8" />
+      
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Országos közutak burkolatállapot adatai - Adatkészlet - Nemzeti Közadatportál</title>
+
+    
+    
+    
+<link rel="shortcut icon" href="/favicon.ico" />
+
+    
+        <link rel="alternate" type="text/n3" href="https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5.n3"/>
+        <link rel="alternate" type="text/ttl" href="https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5.ttl"/>
+        <link rel="alternate" type="application/rdf+xml" href="https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5.xml"/>
+        <link rel="alternate" type="application/ld+json" href="https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5.jsonld"/>
+    
+
+  
+  
+      
+      
+      
+    
+  
+
+  
+
+
+    
+      
+      
+    
+  
+  <meta property="og:title" content="Országos közutak burkolatállapot adatai - CKAN">
+  <meta property="og:description" content="A Magyar Közút  éves bontásban közöl adatokat az országos közutak burkolatállapotáról.">
+
+
+    
+    <link href="/webassets/base/4f3188fa_main.css" rel="stylesheet"/>
+<link href="/webassets/ckanext-scheming/728ec589_scheming_css.css" rel="stylesheet"/>
+<link href="/webassets/ckanext-hutemplate/802b54e8-hutemplate.css" rel="stylesheet"/>
+    
+  </head>
+
+  
+  <body
+  data-site-root="https://kozadatportal.hu/" data-locale-root="https://kozadatportal.hu/"  class="theme_hutemplate"
+>
+
+    
+    <div class="sr-only sr-only-focusable"><a href="#content">Tartalom átugrása</a></div>
+  
+
+  
+     
+  
+  
+
+
+  <header class="navbar navbar-static-top masthead">
+      
+    <div class="container" style="flex-direction: row;">
+      <div class="hidden-xs language_icon_top">
+      </div>
+      <div class="hu-navbar-left">
+        <button data-target="#main-navigation-toggle" data-toggle="collapse" class="navbar-toggle collapsed" type="button" aria-label="expand or collapse" aria-expanded="false">
+          <span class="sr-only">Navigáció</span>
+          <span style="font-size: 24px;" class="feather-icon icon-menu"></span>
+        </button>
+      </div>
+      <div style="font-family: 'Poppins'; font-style: normal; font-weight: 700; font-size: 16px; line-height: 54px;" class="visible-sm-block visible-xs-block">
+        
+        
+        
+        
+        Nyílt adatkészlet
+        
+        
+        
+        
+        
+        
+        
+        
+      </div>
+      <hgroup class="header-image navbar-left">
+        
+
+<a href="/">
+
+<img class="hidden-xs" src="/img/logo_magyar.svg" style="margin-top: 2px;" height="41" alt="Közadat Portál" title="Közadat Portál" />
+
+</a>
+
+      </hgroup>
+      <div class="collapse hu-navbar-collapse" id="main-navigation-toggle">
+        
+      <nav class="section navigation">
+        <ul class="nav nav-pills">
+             
+  <li class="visible-sm-block visible-xs-block "><a href="/">KEZDŐOLDAL</a></li>
+
+  <li class="hoverable ">
+    <a data-dropdown="dropdown-menu-public">Nyilvános közadatok<i id="dropdown-menu-public-icon" class="feather-icon icon-chevron-down dropdown-arrow"></i></a>
+    <div id="dropdown-menu-public" class="dropdown-menu-wrapper">
+      <div class="dropdown-menu">
+        <ul>
+          <li class=""><a href="/dataset/">Nyílt adatkészletek</a></li>
+          <li class=""><a href="/kshdata">KSH adatok</a></li>
+          <li class=""><a href="/dashboard">Dashboard</a></li>
+        </ul>     
+      </div>
+    </div>      
+  </li>
+
+  <li class=""><a href="/about">A Közadatportálról</a></li>
+
+  <li class=""><a href="/publicdata">Közadatkataszter</a></li>
+
+  <li class=""><a href="/dataut">Adathasznosítás</a></li>
+
+  
+  <li class="hoverable ">
+    <a data-dropdown="dropdown-menu-knowledge">Tudásbázis<i id="dropdown-menu-knowledge-icon" class="feather-icon icon-chevron-down dropdown-arrow"></i></a>
+    <div id="dropdown-menu-knowledge" class="dropdown-menu-wrapper">
+      <div class="dropdown-menu">
+        <ul>
+          <li class=""><a href="/legislation">Jogszabályok</a></li>
+          <li class=""><a href="/knowledgebase">Oktatási anyagok</a></li>
+          <li class=""><a href="/dcatdocs">DCAT-AP dokumentáció</a></li>
+        </ul>
+      </div>
+    </div>    
+  </li>
+  <li class=""><a href="/news">Hírek</a></li>
+
+        </ul>
+      </nav>
+      
+        
+<form class="section site-search simple-input" action="/publicdata" method="get">
+  <div class="field">
+    <label for="field-sitewide-search">Adatkészletek keresése</label>
+    <input id="field-sitewide-search" type="text" class="form-control" name="q" placeholder="Keresés a közadatklaszterben" maxlength="1000" aria-label="Keresés a közadatklaszterben"/>
+    <button class="btn-search" type="submit" aria-label="Beküldés"><i class="fa fa-search"></i></button>
+  </div>
+</form>
+
+      </div>
+    </div>
+  </header>
+
+  
+    <div class="main">
+      <div id="content" class="container">
+        
+          
+            <div class="flash-messages">
+              
+                
+              
+            </div>
+          
+
+          
+  <div class="toolbar-wrapper">
+    
+            <div class="toolbar" role="navigation" aria-label="Breadcrumb">
+              
+                
+                  <ol class="breadcrumb">
+                    
+<li class="home"><a href="/" aria-label="Kezdőoldal"><span> Kezdőoldal</span></a></li>
+
+                    
+  
+    
+      <li><a href="/dataset/">Adatkészlet</a></li>
+    <li class="active"><a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963">Országos közutak...</a></li>
+  
+
+                  </ol>
+                
+              
+            </div>
+          
+    
+  </div>
+
+
+          <div class="row wrapper">
+            
+            
+            
+
+            
+  <aside class="secondary col-sm-2 col-xs-12">
+    
+  
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Adatkategóriák</h2>
+    
+    
+      <p>
+        Közlekedés
+      </p>
+      
+    
+  </div>
+  
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Közzétevő</h2>
+    
+      <p>
+        Magyar Közút Nonprofit Zrt.
+          
+      </p>
+  </div>
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Formátumok</h2>
+    
+    <p>
+      XLS
+    </p>
+    
+  </div>
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Címkék</h2>
+    <p>
+    
+    <a class="tag" href="/dataset/?tags=k%C3%B6zleked%C3%A9si+ter%C3%BClet">közlekedési terület</a>
+    
+    <a class="tag" href="/dataset/?tags=sz%C3%A1razf%C3%B6ldi+k%C3%B6zleked%C3%A9s">szárazföldi közlekedés</a>
+    
+    </p>
+  </div>
+  
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Megtekintések</h2>
+    <p>
+      1414
+      
+    </p>
+  </div>
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Letöltések</h2>
+    <p>
+      0
+    </p>
+  </div>
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">API</h2>
+    <p class="api-icons">
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963.rdf" target="_blank"><i class="api-rdf"></i></a>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963.jsonld" target="_blank"><i class="api-json"></i></a>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963.ttl" target="_blank"><i class="api-ttl"></i></a>
+    </p>
+  </div>
+  
+  
+    
+
+
+  
+      
+        <section class="module module-narrow module-shallow license">
+          
+            <h2 class="module-heading"><i class="fa fa-lock"></i> Licenc</h2>
+          
+          
+            <p class="module-content">
+              
+                
+  
+    <a href="http://creativecommons.org/licenses/by-nc/2.0/" rel="dc:rights">Creative Commons Non-Commercial (Any)</a>
+  
+
+                
+              
+            </p>
+          
+        </section>
+      
+  
+
+  
+  
+
+  </aside>
+
+
+            
+  <div class="primary col-sm-10 col-xs-12" role="main">
+    
+  <article class="module">
+    
+    <div class="module-content">
+      
+      
+  
+      
+    
+
+<style>
+  .labels .label {
+    background: #F1F7F9 !important;
+    border-radius: 10px !important;
+  }
+  div.labels > span:nth-child(2) {
+    display: none !important;
+  }
+  @media (max-width: 576px) {
+    .showcase-image {
+      width: 100% !important;
+    }
+    .showcase-text {
+      padding-left: 0px !important;
+    }
+    .showcase-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .secondary {
+      display: none !important;
+    }
+    .notes.embedded-content {
+      margin-bottom: 0px !important;
+    }
+    h2 {
+      margin-bottom: 0px !important;
+    }
+  }
+  a.tag {
+    color: #00156B !important; 
+    background: #F2F2F2 !important;
+    border-radius: 10px !important;
+  }
+</style>
+
+
+  <div style="padding: 25px 0px;" class="col-md-12 visible-xs-block visible-sm-block">
+    <a href="/dataset">
+        <img src="/img/back_button.svg" alt="">
+        <span style="color: #000930; font-family: 'Poppins'; font-style: normal; font-weight: 700; font-size: 16px; line-height: 14px;">Vissza</span>
+    </a>
+  </div>
+
+  <span style="display: none !important;" class="manage-package">
+    <a class="btn btn-default btn-outline btn-sm" href="/dataset/activity/2cd3742d-17e5-4f12-8a31-9e7e3fa13963">Előzmények</a>
+    
+      
+    
+  </span>
+
+  <div class="package-read">
+    
+      
+    <h1>
+      
+        Országos közutak burkolatállapot adatai
+        
+        
+      
+    </h1>
+    <div class="labels">
+      
+      <span class="label">
+        <span class="subtext">Utolsó frissítés</span>
+        2022.08.30. 16:16
+      </span>
+      <span class="label">
+        <span class="subtext">Létrehozva</span>
+        2022.08.30. 14:51
+      </span>
+    </div>
+    
+    <div class="notes embedded-content">
+      <p>A Magyar Közút  éves bontásban közöl adatokat az országos közutak burkolatállapotáról.</p>
+    </div>
+  
+
+    <span class="insert-comment-thread"></span>
+
+    <div class="col-md-12 visible-xs-block visible-sm-block">
+      
+  
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Adatkategóriák</h2>
+    
+    
+      <p>
+        Közlekedés
+      </p>
+      
+    
+  </div>
+  
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Közzétevő</h2>
+    
+      <p>
+        Magyar Közút Nonprofit Zrt.
+          
+      </p>
+  </div>
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Formátumok</h2>
+    
+    <p>
+      XLS
+    </p>
+    
+  </div>
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Címkék</h2>
+    <p>
+    
+    <a class="tag" href="/dataset/?tags=k%C3%B6zleked%C3%A9si+ter%C3%BClet">közlekedési terület</a>
+    
+    <a class="tag" href="/dataset/?tags=sz%C3%A1razf%C3%B6ldi+k%C3%B6zleked%C3%A9s">szárazföldi közlekedés</a>
+    
+    </p>
+  </div>
+  
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Megtekintések</h2>
+    <p>
+      1414
+      
+    </p>
+  </div>
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">Letöltések</h2>
+    <p>
+      0
+    </p>
+  </div>
+  <div class="module module-narrow module-shallow context-info">
+    <h2 class="module-heading">API</h2>
+    <p class="api-icons">
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963.rdf" target="_blank"><i class="api-rdf"></i></a>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963.jsonld" target="_blank"><i class="api-json"></i></a>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963.ttl" target="_blank"><i class="api-ttl"></i></a>
+    </p>
+  </div>
+  
+  
+    
+
+
+  
+      
+        <section class="module module-narrow module-shallow license">
+          
+            <h2 class="module-heading"><i class="fa fa-lock"></i> Licenc</h2>
+          
+          
+            <p class="module-content">
+              
+                
+  
+    <a href="http://creativecommons.org/licenses/by-nc/2.0/" rel="dc:rights">Creative Commons Non-Commercial (Any)</a>
+  
+
+                
+              
+            </p>
+          
+        </section>
+      
+  
+
+  
+  
+
+    </div>
+
+    <h2>Adatelérések</h2>
+    
+    
+<section id="dataset-resources" class="resources">
+  
+    
+    <div class="row">
+      
+        
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="2fe4d9a2-0ea8-4e56-b0d5-ff3fd0ba5365">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/2fe4d9a2-0ea8-4e56-b0d5-ff3fd0ba5365" title="Országos közutak burkolatállapot adatai 2013">
+    Országos közutak burkolatállapot adatai 2013
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/2fe4d9a2-0ea8-4e56-b0d5-ff3fd0ba5365">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2013-12-31/?wpdmdl=4931&amp;refresh=62a8804c1591f1655210060" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="cb61811c-b989-4a43-b254-9dbe2e6ba03e">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/cb61811c-b989-4a43-b254-9dbe2e6ba03e" title="Országos közutak burkolatállapot adatai 2014">
+    Országos közutak burkolatállapot adatai 2014
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/cb61811c-b989-4a43-b254-9dbe2e6ba03e">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2013-12-31/?wpdmdl=4931&amp;refresh=62a8804c1591f1655210060" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="41dcd29d-7fc6-4848-8300-33bd3dac0b9e">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/41dcd29d-7fc6-4848-8300-33bd3dac0b9e" title="Országos közutak burkolatállapot adatai 2015">
+    Országos közutak burkolatállapot adatai 2015
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/41dcd29d-7fc6-4848-8300-33bd3dac0b9e">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2015-12-31/?wpdmdl=4933&amp;refresh=62a8804c035d81655210060" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="c6bf0639-bef0-484c-af62-5c4d7a48025a">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/c6bf0639-bef0-484c-af62-5c4d7a48025a" title="Országos közutak burkolatállapot adatai 2016">
+    Országos közutak burkolatállapot adatai 2016
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/c6bf0639-bef0-484c-af62-5c4d7a48025a">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2016-12-31/?wpdmdl=4934&amp;refresh=62a8804bedb221655210059" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="37b35d9f-b6c0-43a6-8cd2-19994b1a3e8c">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/37b35d9f-b6c0-43a6-8cd2-19994b1a3e8c" title="Országos közutak burkolatállapot adatai 2017">
+    Országos közutak burkolatállapot adatai 2017
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/37b35d9f-b6c0-43a6-8cd2-19994b1a3e8c">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2017-12-31/?wpdmdl=4935&amp;refresh=62a8804be4b931655210059" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="7b727552-cb61-4de6-898d-800e6da38ec3">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/7b727552-cb61-4de6-898d-800e6da38ec3" title="Országos közutak burkolatállapot adatai 2018">
+    Országos közutak burkolatállapot adatai 2018
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/7b727552-cb61-4de6-898d-800e6da38ec3">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2018-12-31/?wpdmdl=6931&amp;refresh=62a8804bdb4c21655210059" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="c80ca0d9-b2a0-491b-ae3e-dc441fd220b1">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/c80ca0d9-b2a0-491b-ae3e-dc441fd220b1" title="Országos közutak burkolatállapot adatai 2019">
+    Országos közutak burkolatállapot adatai 2019
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/c80ca0d9-b2a0-491b-ae3e-dc441fd220b1">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2019-12-31/?wpdmdl=9148&amp;refresh=62a8804bd19611655210059" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="2296da45-c571-495a-9488-f6fc64b2d1ae">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/2296da45-c571-495a-9488-f6fc64b2d1ae" title="Országos közutak burkolatállapot adatai 2020">
+    Országos közutak burkolatállapot adatai 2020
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/2296da45-c571-495a-9488-f6fc64b2d1ae">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2020-12-31/?wpdmdl=11142&amp;refresh=62a8804bc416b1655210059" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+          
+
+
+<div class="col-xs-12 col-md-6">
+<div class="resource-item dropdown" data-id="4ccf9efa-a07e-49d0-a280-83f8a5ae5700">
+  
+  <a class="heading" href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/4ccf9efa-a07e-49d0-a280-83f8a5ae5700" title="Országos közutak burkolatállapot adatai 2021">
+    Országos közutak burkolatállapot adatai 2021
+    
+
+  </a>
+  
+  
+  
+  <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <i class="feather-icon icon-chevron-down"></i>
+  </a>
+  <ul class="dropdown-menu">
+    
+    <li>
+      <a href="/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/resource/4ccf9efa-a07e-49d0-a280-83f8a5ae5700">
+        
+          Több információ
+        
+      </a>
+    </li>
+    
+    <li>
+      <a data-module="accept-terms" data-module-href="https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2021-12-31/?wpdmdl=12076&amp;refresh=62a8804bb85d71655210059" href="#" class="resource-url-analytics">
+        
+          Ugrás az adateléréshez
+        
+      </a>
+    </li>
+    
+    
+    
+  </ul>
+  
+  
+</div>
+</div>
+        
+      
+    </div>
+    
+    
+</section>
+  
+    <h2>Metaadatok</h2>
+    
+  <style>
+  .resource-item {
+    height: auto !important;
+    padding: 15px 0px !important;
+  }
+  .loader {
+    margin: auto;
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid #2bb98f;
+    width: 40px;
+    height: 40px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.row {
+  font-family: 'LATO';
+}
+.main-meta-data {
+  margin-bottom: 24px;
+}
+.main-meta-data .keywords a {
+  color: #000930;
+  text-decoration: none;
+}
+.main-meta-data .keywords {
+  color: #000930;
+  background: #F2F2F2;
+  padding: 5px 10px;
+  border-radius: 10px;
+  display: inline-block;
+  font-size: 13px;
+  margin-right: 5px;
+}
+.main-meta-data h3 {
+  font-size: 18px;
+  color: #00156B;
+  font-weight: 700;
+  margin-bottom: 0px;
+}
+.main-meta-data p {
+  font-size: 15px;
+  color: #000930;
+  font-weight: 400;
+}
+h1.meta-title {
+  width: 80%;
+  font-weight: 500;
+  font-size: 30px;
+  color: #00156B;
+  margin: 0;
+}
+a.meta-button {
+  color: #2CBA8F;
+  font-size: 16px;
+  font-weight: 700;
+  border: 1px solid #2CBA8F;
+  border-radius: 50px;
+  padding: 8px 12px;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+}
+.Nal_description {
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 20px;
+  color: #000930;
+  margin-bottom: 40px;
+}
+div.dates {
+  margin-bottom: 30px;
+}
+div.dates div {
+  background: #F1F7F9;
+  border-radius: 10px;
+  padding: 5px 20px;
+  display: inline-block;
+  font-weight: 500;
+  font-size: 16px;
+  color: #00156B;
+}
+div.metas {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+}
+div.metarow {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+.metarow .key {
+  padding: 30px 20px 30px 17px;
+  width: 320px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #000930;
+}
+.metarow .value {
+  padding: 30px 20px 30px 17px;
+  font-weight: 400;
+  font-size: 15px;
+  color: #000930;
+  width: 60vw;
+  word-break: break-word;
+}
+.metarow:nth-child(even) {
+  background: #F1F7F9;
+  border-radius: 10px;
+}
+.metarow .key.head {
+  padding: 10px 20px 10px 17px;
+  color: #00156B;
+  font-weight: 700;
+  font-size: 16px;
+}
+.metarow .value.head {
+  color: #00156B;
+  padding: 10px 20px 10px 17px;
+  font-weight: 700;
+  font-size: 16px;
+}
+</style>
+
+<section class="additional-info">
+
+  <div class="metas">
+    <div class="metarow">
+      <div class="key head">
+        Mező
+      </div>
+      <div class="value head">
+        Érték
+      </div>
+    </div><div class="metarow">
+            <div class="key">
+              Típus
+            </div>
+            <div class="value">Statisztikai adat</div>
+          </div><div class="metarow">
+            <div class="key">
+              Nyelvek
+            </div>
+            <div class="value">magyar</div>
+          </div><div class="metarow">
+            <div class="key">
+              Térbeli lefedettség
+            </div>
+            <div class="value">Magyarország</div>
+          </div><div class="metarow">
+            <div class="key">
+              Időbeli lefedettség kezdete
+            </div>
+            <div class="value">
+  2013-01-01
+</div>
+          </div><div class="metarow">
+            <div class="key">
+              Időbeli lefedettség vége
+            </div>
+            <div class="value">
+  2021-12-31
+</div>
+          </div><div class="metarow">
+            <div class="key">
+              Időbeli felbontás
+            </div>
+            <div class="value">év</div>
+          </div><div class="metarow">
+            <div class="key">
+              Kapcsolattartó
+            </div>
+            <div class="value">Magyar Közút</div>
+          </div><div class="metarow">
+            <div class="key">
+              Kapcsolattartó email címe
+            </div>
+            <div class="value"><a href=mailto:kozut@kozut.hu>kozut@kozut.hu</a></div>
+          </div><div class="metarow">
+            <div class="key">
+              Közzétevői oldal
+            </div>
+            <div class="value">https://internet.kozut.hu/kozerdeku-adatok/orszagos-kozuti-adatbank/az-allami-kozuthalozatrol/</div>
+          </div><div class="metarow">
+            <div class="key">
+              Verzió
+            </div>
+            <div class="value">1</div>
+          </div><div class="metarow">
+            <div class="key">
+              Frissítés gyakorisága
+            </div>
+            <div class="value">évenkénti</div>
+          </div></div>
+
+  </section>
+
+    
+
+
+
+
+
+
+
+
+
+<a name="star-ratings"></a>
+<div class="star-rating" >
+  <span class="star-text">
+    Hogyan értékeli az adatkészletet?
+  </span>
+  <span class="star-rating-stars">
+      
+      
+      <a class="fa fa-star rating-star" id="star-0" href="/rating/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/1#star-ratings"></a>
+      
+      
+      <a class="fa fa-star rating-star" id="star-1" href="/rating/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/2#star-ratings"></a>
+      
+      
+      <a class="fa fa-star rating-star" id="star-2" href="/rating/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/3#star-ratings"></a>
+      
+      
+      <a class="fa fa-star rating-star" id="star-3" href="/rating/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/4#star-ratings"></a>
+      
+      
+      <a class="fa fa-star rating-star empty" id="star-4" href="/rating/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963/5#star-ratings"></a><span class="hint star-0">Gyenge</span>
+      <span class="hint star-1">Elfogadható</span>
+      <span class="hint star-2">Megfelelő</span>
+      <span class="hint star-3">Jó</span>
+      <span class="hint star-4">Kiváló</span>
+  </span>
+</div>
+    
+
+
+    
+
+  </div>
+  
+  
+
+<div class="modal fade terms-of-use" id="accept_terms_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Felhasználási feltételek</h4>
+        </div>
+        <div class="modal-body">
+          
+           
+    
+    <div class="col-xs-12">
+        
+        
+        <div class="ckanext-pages-content">
+        
+        <!-- editor set to "ckeditor"-->
+        
+            <div><div><p>Az alábbi feltételek érvényesek minden, a Nemzeti Adatvagyon Ügynökség Korlátolt Felelősségű Társaság (1083 Budapest, Bókay János u. 36-42.; a továbbiakban: NAVÜ Kft.) által üzemeltetett  Nemzeti Közadatportál (a továbbiakban: Közadatportál) honlapján megtalálható adatkészlet felhasználására érvényesek. </p>
+
+<p>Az adatkészlet letöltése ráutaló magatartásnak minősül arra vonatkozóan, hogy a Felhasználó, egyben adatkészlet letöltő, a letöltéssel egyidejűleg elfogadja és tudomásul veszi a jelen dokumentumban foglalt felhasználási feltételeket és azokat magára nézve kötelezőnek fogadja el.  </p>
+
+<p> </p>
+
+<h3>I. Fogalmak </h3>
+
+<p> </p>
+
+<p><strong>Adatkészlet: </strong>egymáshoz kapcsolódó adatok gyűjteménye, amely különálló elemekből áll, de egységként kezelhető, és letölthető, illetve megnyitható egy vagy több formátumban. </p>
+
+<p><strong>Felhasználás:</strong> az adatkészlet Közadatportálról történő letöltése, illetve az alkalmazott eljárástól függetlenül az adatokon végzett bármely művelet vagy a műveletek összessége, így különösen azok rögzítése, rendszerezése, tárolása, megváltoztatása, lekérdezése, továbbítása, nyilvánosságra hozatala, összehangolása vagy összekapcsolása, zárolása, törlése és megsemmisítése. </p>
+
+<p><strong>Felhasználó:</strong> bármely természetes vagy jogi személy, vagy jogi személyiséggel nem rendelkező szervezet, aki vagy amely az adatkészletet felhasználja. </p>
+
+<p><strong>Közadat:</strong> az információs önrendelkezési jogról és az információszabadságról szóló törvényben meghatározott közérdekű adat és közérdekből nyilvános adat. </p>
+
+<p><strong>Közérdekből nyilvános adat:</strong> a közérdekű adat fogalma alá nem tartozó minden olyan adat, amelynek nyilvánosságra hozatalát, megismerhetőségét vagy hozzáférhetővé tételét törvény közérdekből elrendeli. </p>
+
+<p><strong>Közérdekű adat:</strong> az állami vagy helyi önkormányzati feladatot, valamint jogszabályban meghatározott egyéb közfeladatot ellátó szerv vagy személy kezelésében lévő és tevékenységére vonatkozó vagy közfeladatának ellátásával összefüggésben keletkezett, a személyes adat fogalma alá nem eső, bármilyen módon vagy formában rögzített információ vagy ismeret, függetlenül kezelésének módjától, önálló vagy gyűjteményes jellegétől, így különösen a hatáskörre, illetékességre, szervezeti felépítésre, szakmai tevékenységre, annak eredményességére is kiterjedő értékelésére, a birtokolt adatfajtákra és a működést szabályozó jogszabályokra, valamint a gazdálkodásra, a megkötött szerződésekre vonatkozó adat. </p>
+
+<p><strong>Közfeladatot ellátó szerv:</strong> állami vagy helyi önkormányzati feladatot, valamint jogszabályban meghatározott egyéb közfeladatot ellátó szerv vagy személy. </p>
+
+<p> </p>
+
+<h3><strong>II. Felhasználási feltételek</strong> </h3>
+
+<p> </p>
+
+<ol>
+	<li>
+	<p>A Közadatportálról letölthető adatkészletek az egyes adatkészletekhez rendelt licenc feltételek szerint használhatók fel. A licenc feltételek az adatkészlet megnevezése alatt „licenc” feliratra kattintva érhetők el. Minden olyan adatkészlet, ahol külön licenc feltétel nincs feltüntetve, korlátozás mentesen felhasználható közadat. </p>
+	</li>
+	<li>
+	<p>Amennyiben a Felhasználó az adatkészletet a közadatok újrahasznosításáról szóló 2012. évi LXIII. törvény szerinti újrahasznosítás céljából kívánja felhasználni, a letöltés egyben arra vonatkozó nyilatkozatának minősül, hogy az adatot e célból veszi igénybe. </p>
+	</li>
+	<li>
+	<p>Felhasználó kijelenti és elismeri, hogy az adatkészlet felhasználása csak saját felelősségére történik. </p>
+	</li>
+	<li>
+	<p>A NAVÜ Kft. minden tőle telhetőt megtesz azért, hogy a honlaphoz történő hozzáférés folyamatos és zavartalan legyen. </p>
+	</li>
+	<li>
+	<p>A NAVÜ Kft. nem vállal felelősséget:   </p>
+	</li>
+</ol>
+
+<ul>
+	<li>a közzétett adatkészlet pontosságáért, azokat tartalmi szempontból nem ellenőrzi; </li>
+	<li>
+	<p>az adatok publikálhatóságáért, különösen a szerzői jogi, a személyes adat védelmi, illetve üzleti titokra vonatkozó szabályozásokból adódó korlátozások figyelembevételéért,  </p>
+	</li>
+	<li>
+	<p>az adatkészletek felhasználása alapján végzett számítások, levont következtetések pontosságára, megbízhatóságára, tartalmára, az abból eredő bármilyen következményért; </p>
+	</li>
+	<li>
+	<p>a letöltött adatkészlet által a felhasználó számítógéprendszerében, továbbá egyéb elektronikus, vagy informatikai eszközében bekövetkezett esetleges bármilyen következményért, így különösen zavarért, meghibásodásért, adatvesztésért; </p>
+	</li>
+	<li>
+	<p>a Közadatportálon hivatkozott – más közfeladatot ellátó szerv által üzemeltetett – honlap működéséért és tartalmáért;  </p>
+	</li>
+	<li>
+	<p>a Közadatportálon elérhető téves, meg nem jelenített vagy módosított adatkészlet következtében felmerült veszteségért, kárért, költségért vagy kiadásért. </p>
+	</li>
+</ul>
+
+<p> </p>
+
+<ol start="6">
+	<li>
+	<p>A NAVÜ Kft. a Közadatportálon minden adatkészletnél feltünteti az adatot publikáló felelős szervezet nevét, és a Közadatportálon közzéteszi a publikáló szervezetek elérhetőségét. </p>
+	</li>
+	<li>
+	<p>A jelen feltételek az adatkészlet letöltésének megkezdésével lépnek hatályba és annak felhasználása alatt hatályosak. </p>
+	</li>
+	<li>
+	<p>A jelen feltételekben nem szabályozott kérdésekben a magyar jogszabályok – különös tekintettel a Polgári Törvénykönyv rendelkezései – az irányadók. </p>
+	</li>
+</ol>
+</div></div>
+        
+        </div>
+    </div>
+     
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default btn-outline" data-dismiss="modal">Elutasítom</button>
+          <a class="btn btn-primary" target="_blank">Elfogadom</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    </div>
+  </article>
+
+  </div>
+
+          </div>
+        
+      </div>
+    </div>
+  
+    <footer class="site-footer">
+  <div class="container">
+    
+<a href="/contact">Kapcsolat</a>
+<a href="https://www.navu.hu/" target="_blank">navu.hu</a>
+<a href="/disclaimers">Jogi felelősség nyilatkozatok</a>
+<a href="/privacypolicy">Adatvédelem</a>
+<a href="/imprint">Impresszum</a>
+<a href="/cookieinfo">Süti tájékoztató</a>
+<a href="https://adatedih.hu/" target="_blank"><img src="/img/adatedih_padded_logo_b.png" alt="edih" style="width:77px;height:18px;"></a>
+
+  </div>
+
+  
+
+</footer>
+  
+  
+  
+  
+    
+  
+  
+  
+    
+  
+  
+  
+
+
+  
+  
+      
+  
+
+  
+    
+
+      
+          <script type="application/ld+json">
+           {
+    "@context": {
+        "brick": "https://brickschema.org/schema/Brick#",
+        "csvw": "http://www.w3.org/ns/csvw#",
+        "dc": "http://purl.org/dc/elements/1.1/",
+        "dcam": "http://purl.org/dc/dcam/",
+        "dcat": "http://www.w3.org/ns/dcat#",
+        "dcmitype": "http://purl.org/dc/dcmitype/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "doap": "http://usefulinc.com/ns/doap#",
+        "foaf": "http://xmlns.com/foaf/0.1/",
+        "odrl": "http://www.w3.org/ns/odrl/2/",
+        "org": "http://www.w3.org/ns/org#",
+        "owl": "http://www.w3.org/2002/07/owl#",
+        "prof": "http://www.w3.org/ns/dx/prof/",
+        "prov": "http://www.w3.org/ns/prov#",
+        "qb": "http://purl.org/linked-data/cube#",
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+        "schema": "http://schema.org/",
+        "sh": "http://www.w3.org/ns/shacl#",
+        "skos": "http://www.w3.org/2004/02/skos/core#",
+        "sosa": "http://www.w3.org/ns/sosa/",
+        "ssn": "http://www.w3.org/ns/ssn/",
+        "time": "http://www.w3.org/2006/time#",
+        "vann": "http://purl.org/vocab/vann/",
+        "void": "http://rdfs.org/ns/void#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#"
+    },
+    "@graph": [
+        {
+            "@id": "Magyarorsz\u00e1g",
+            "@type": "schema:Place"
+        },
+        {
+            "@id": "https://kozadatportal.hu/organization/3dc8d114-75e5-4059-8f8a-4fb6314f1b46",
+            "@type": "schema:Organization",
+            "schema:contactPoint": {
+                "@id": "_:Ne22ec86f8d394c588e6c3fe5603f46ec"
+            },
+            "schema:name": "Magyar K\u00f6z\u00fat Nonprofit Zrt."
+        },
+        {
+            "@id": "_:Ne22ec86f8d394c588e6c3fe5603f46ec",
+            "@type": "schema:ContactPoint",
+            "schema:contactType": "customer service",
+            "schema:email": "kozut@kozut.hu",
+            "schema:name": "Magyar K\u00f6z\u00fat",
+            "schema:url": "https://kozadatportal.hu"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/cb61811c-b989-4a43-b254-9dbe2e6ba03e",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2014-re vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2014",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2013-12-31/?wpdmdl=4931\u0026refresh=62a8804c1591f1655210060"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/41dcd29d-7fc6-4848-8300-33bd3dac0b9e",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2015-re vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2015",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2015-12-31/?wpdmdl=4933\u0026refresh=62a8804c035d81655210060"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/7b727552-cb61-4de6-898d-800e6da38ec3",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2018-ra vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2018",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2018-12-31/?wpdmdl=6931\u0026refresh=62a8804bdb4c21655210059"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/4ccf9efa-a07e-49d0-a280-83f8a5ae5700",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2021-re vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2021",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2021-12-31/?wpdmdl=12076\u0026refresh=62a8804bb85d71655210059"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/2296da45-c571-495a-9488-f6fc64b2d1ae",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2020-ra vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2020",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2020-12-31/?wpdmdl=11142\u0026refresh=62a8804bc416b1655210059"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/c6bf0639-bef0-484c-af62-5c4d7a48025a",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2016-ra vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2016",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2016-12-31/?wpdmdl=4934\u0026refresh=62a8804bedb221655210059"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5",
+            "@type": "schema:Dataset",
+            "schema:about": {
+                "@id": "_:Nb8cd273a45104a7ba70e4759b0ad7bdd"
+            },
+            "schema:dateModified": "2022-08-30T14:16:46.544716",
+            "schema:datePublished": "2022-08-30T12:51:22.658846",
+            "schema:description": " A Magyar K\u00f6z\u00fat  \u00e9ves bont\u00e1sban k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:distribution": [
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/c80ca0d9-b2a0-491b-ae3e-dc441fd220b1"
+                },
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/2fe4d9a2-0ea8-4e56-b0d5-ff3fd0ba5365"
+                },
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/41dcd29d-7fc6-4848-8300-33bd3dac0b9e"
+                },
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/7b727552-cb61-4de6-898d-800e6da38ec3"
+                },
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/4ccf9efa-a07e-49d0-a280-83f8a5ae5700"
+                },
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/cb61811c-b989-4a43-b254-9dbe2e6ba03e"
+                },
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/37b35d9f-b6c0-43a6-8cd2-19994b1a3e8c"
+                },
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/c6bf0639-bef0-484c-af62-5c4d7a48025a"
+                },
+                {
+                    "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/2296da45-c571-495a-9488-f6fc64b2d1ae"
+                }
+            ],
+            "schema:inLanguage": "magyar",
+            "schema:includedInDataCatalog": {
+                "@id": "_:N705e930b84b742218a4b469de9c7b2a8"
+            },
+            "schema:keywords": [
+                "sz\u00e1razf\u00f6ldi k\u00f6zleked\u00e9s",
+                "k\u00f6zleked\u00e9si ter\u00fclet"
+            ],
+            "schema:license": "http://creativecommons.org/licenses/by-nc/2.0/",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai",
+            "schema:publisher": {
+                "@id": "https://kozadatportal.hu/organization/3dc8d114-75e5-4059-8f8a-4fb6314f1b46"
+            },
+            "schema:spatialCoverage": {
+                "@id": "Magyarorsz\u00e1g"
+            },
+            "schema:temporalCoverage": "2013-01-01/2021-12-31",
+            "schema:url": "https://kozadatportal.hu/dataset/2cd3742d-17e5-4f12-8a31-9e7e3fa13963",
+            "schema:version": "1"
+        },
+        {
+            "@id": "_:N705e930b84b742218a4b469de9c7b2a8",
+            "@type": "schema:DataCatalog",
+            "schema:description": "",
+            "schema:name": "CKAN",
+            "schema:url": "https://kozadatportal.hu"
+        },
+        {
+            "@id": "_:Nb8cd273a45104a7ba70e4759b0ad7bdd",
+            "@type": "schema:Thing",
+            "schema:name": "tran",
+            "schema:url": "https://kozadatportal.hu/group/023f18f3-9b1f-427d-8aff-024cd0a75820"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/2fe4d9a2-0ea8-4e56-b0d5-ff3fd0ba5365",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2013-ra vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2013",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2013-12-31/?wpdmdl=4931\u0026refresh=62a8804c1591f1655210060"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/37b35d9f-b6c0-43a6-8cd2-19994b1a3e8c",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2017-re vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2017",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2017-12-31/?wpdmdl=4935\u0026refresh=62a8804be4b931655210059"
+        },
+        {
+            "@id": "https://kozadatportal.hu/dataset/517a73c5-77f0-4cf8-820b-8b1399065cc5/resource/c80ca0d9-b2a0-491b-ae3e-dc441fd220b1",
+            "@type": "schema:DataDownload",
+            "schema:description": "Az orsz\u00e1g \u00fat\u00e1llom\u00e1nya k\u00f6zutakra \u00e9s mag\u00e1nutakra oszlik. A k\u00f6zutak \u00e1llami tulajdon\u00fa orsz\u00e1gos k\u00f6zutak \u00e9s \u00f6nkorm\u00e1nyzati tulajdon\u00fa helyi k\u00f6zutak. A Magyar K\u00f6z\u00fat ebben az adatel\u00e9r\u00e9sben 2019-re vonatkoz\u00f3an k\u00f6z\u00f6l adatokat az orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot\u00e1r\u00f3l. ",
+            "schema:encodingFormat": "XLS",
+            "schema:inLanguage": "magyar",
+            "schema:name": "Orsz\u00e1gos k\u00f6zutak burkolat\u00e1llapot adatai 2019",
+            "schema:url": "https://internet.kozut.hu/download/orszagos-kozutak-burkolatallapot-adatai-2019-12-31/?wpdmdl=9148\u0026refresh=62a8804bd19611655210059"
+        }
+    ]
+}
+          </script>
+      
+  
+
+
+    
+    
+    <link href="/webassets/ckanext-rating/rating.css?48a16a83" rel="stylesheet"/>
+<link href="/webassets/vendor/f3b8236b_select2.css" rel="stylesheet"/>
+<link href="/webassets/vendor/0b01aef1_font-awesome.css" rel="stylesheet"/>
+    <script src="/webassets/vendor/d8ae4bed_jquery.js" type="text/javascript"></script>
+<script src="/webassets/vendor/fb6095a0_vendor.js" type="text/javascript"></script>
+<script src="/webassets/vendor/580fa18d_bootstrap.js" type="text/javascript"></script>
+<script src="/webassets/base/15a18f6c_main.js" type="text/javascript"></script>
+<script src="/webassets/ckanext-rating/rating.js?1c7cf503" type="text/javascript"></script>
+<script src="/webassets/ckanext-hutemplate/5f942742-hutemplate-accept-terms.js" type="text/javascript"></script>
+<script src="/webassets/base/2448af8b_ckan.js" type="text/javascript"></script>
+<script src="/webassets/base/cd2c0272_tracking.js" type="text/javascript"></script>
+<script src="/webassets/ckanext-hutemplate/6c353389-mobile-dropdown-nav.js" type="text/javascript"></script>
+<script src="/webassets/ckanext-hutemplate/40c37669-hutemplate-dropdown.js" type="text/javascript"></script>
+<script src="/webassets/ckanext-hutemplate/247b981a-editor-hutemplate.js" type="text/javascript"></script>
+  </body>
+</html>
