@@ -17,7 +17,7 @@ RUN  := cd pipeline && ../$(PY) -m
 SOURCES ?=   # e.g. make download SOURCES=osm (default: all)
 
 .DEFAULT_GOAL := help
-.PHONY: help setup check-tools db-up db-down db-reset psql download import nap lrs attributes objects qa tiles web-dev web-build refresh deploy-data snapshot-raw restore-raw fetch-install fetch-uninstall test
+.PHONY: help setup check-tools db-up db-down db-reset psql download import nap reference lrs attributes objects qa tiles web-dev web-build refresh deploy-data snapshot-raw restore-raw fetch-install fetch-uninstall test
 
 help: ## Show this help
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -60,7 +60,10 @@ import: setup db-up ## Load data/raw/ into PostGIS (raw schema)
 nap: setup db-up ## Fetch the subscribed NAP packages (weekly at most) and load raw.nap_* (ARGS=--load-only)
 	$(RUN) szelveny.nap $(ARGS)
 
-lrs: setup db-up ## Build roads from OSM numbers and calibrate km (OSM-only roads, fallback)
+reference: setup db-up ## The national network from NAP with official szelvény (after nap)
+	$(RUN) szelveny.reference
+
+lrs: setup db-up ## Add numbered roads NAP lacks from OSM, calibrate their km (after reference)
 	$(RUN) szelveny.lrs $(ARGS)
 
 attributes: setup db-up ## Surface, lanes, speed, bridges, curves onto road km ranges

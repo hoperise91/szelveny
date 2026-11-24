@@ -27,9 +27,12 @@ CREATE TABLE source (
 CREATE TABLE road (
     road_id           serial PRIMARY KEY,
     ref               text NOT NULL,              -- 'M1', '8', '4512', '81101'; local roads: the name
-    category          text NOT NULL CHECK (category IN ('M', 'F', 'OK', 'BK', 'local')),
-                                                  -- M gyorsforgalmi, F főút, OK összekötő út,
-                                                  -- BK bekötő út (hungary.py)
+    category          text NOT NULL CHECK (category IN ('M', 'F', 'OK', 'BK', 'ramp', 'cycle', 'rest', 'local')),
+                                                  -- M gyorsforgalmi, F főút, OK összekötő út, BK bekötő
+                                                  -- út, ramp csomóponti ág, cycle kerékpárút, rest
+                                                  -- pihenőút (NAP kutka; number-based for OSM roads)
+    road_class        text,                       -- NAP's category name: 'autópálya', 'II. rendű főút', …
+    administrator     text,                       -- kezelő (NAP): 'Magyar Közút Nonprofit Zrt.', …
     county            text,                       -- ISO 3166-2:HU code ('GS'); NULL for national roads
     settlement        text,                       -- local roads only (with ref = name)
     route_desc        text,
@@ -50,6 +53,12 @@ CREATE TABLE road_segment (
     length_m    double precision GENERATED ALWAYS AS (ST_Length(ST_Transform(geom, 23700))) STORED,
     km_quality  text NOT NULL CHECK (km_quality IN ('official', 'calibrated', 'interpolated', 'estimated', 'none')),
                                     -- official: NAP szelvény; none: local road without chainage
+    carriageway smallint NOT NULL DEFAULT 0 CHECK (carriageway IN (0, 1, 2)),
+                                    -- NAP pkod: 0 undivided, 1 right (chainage direction), 2 left
+    km_from_text text,              -- NAP's own szelvény ('20 + 1007'): the metre part can pass 999
+    km_to_text   text,              -- in km sections longer than 1 km, so keep it for display
+    shared_with text,               -- közös szakasz: the lower-ranked road on this section
+    source_ref  text,               -- the source's record id (NAP: id)
     source_id   text NOT NULL REFERENCES source,
     UNIQUE (road_id, sequence)
 );
@@ -62,8 +71,10 @@ CREATE TABLE attribute_event (
     km_from      numeric(9,3) NOT NULL,
     km_to        numeric(9,3) NOT NULL,
     type         text NOT NULL CHECK (type IN
-                   ('surface', 'lanes', 'maxspeed', 'aadt', 'width', 'bridge', 'tunnel', 'works', 'ten_t', 'eroad', 'curve')),
+                   ('surface', 'lanes', 'maxspeed', 'aadt', 'width', 'bridge', 'tunnel', 'works', 'ten_t', 'eroad',
+                    'curve', 'built_up', 'oneway', 'truck_restriction', 'administrator')),
     value        text NOT NULL,
+    carriageway  smallint CHECK (carriageway IN (0, 1, 2)),   -- NAP pkod; NULL: whole road
     source_id    text NOT NULL REFERENCES source,
     source_date  date NOT NULL,
     licence      text NOT NULL,

@@ -28,7 +28,7 @@ OUT = DATA_OUT / "refresh"
 HISTORY_KEEP = 104  # weeks of changes kept in changes.json (two years)
 
 # Checks. A run that breaks one is held back, not published.
-CHECKPOINT_MAX_M = 50          # every public checkpoint (tests/lrs_checkpoints.csv)
+CHECKPOINT_MAX_M = 20          # every public checkpoint (tests/lrs_checkpoints.csv, official sections)
 HOLDOUT_SHARE_DROP = 0.05      # held-out milestones within 50 m may fall at most 5 points
 HOLDOUT_MEDIAN_MAX_M = 25
 ROAD_COUNT_DROP = 0.01         # at most 1% of roads may disappear in a week

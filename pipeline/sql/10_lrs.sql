@@ -54,7 +54,7 @@ LANGUAGE sql STABLE AS $$
     WHERE r.ref = upper(replace(p_ref, ' ', ''))
       AND (r.county IS NULL OR r.county = p_county)
       AND p_km BETWEEN s.km_from AND s.km_to
-    ORDER BY r.county IS NULL DESC, s.sequence
+    ORDER BY r.county IS NULL DESC, s.carriageway = 2, s.sequence   -- right carriageway first
     LIMIT 1
 $$;
 

@@ -570,7 +570,7 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
     roads = conn.execute("""
         SELECT road_id, ref, category, county, route_desc,
                km_from_official, km_to_official, length_official, source_id = 'osm'
-        FROM szelveny.road ORDER BY category, ref""").fetchall()
+        FROM szelveny.road WHERE source_id = 'osm' ORDER BY category, ref""").fetchall()
 
     hints: dict[tuple, object] = {}
 
@@ -696,7 +696,9 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
                                                    if a.kind in ("milestone", "junction")})})
 
     print(f"lrs: writing {len(segments):,} segments…", flush=True)
-    conn.execute("TRUNCATE szelveny.road_segment, szelveny.lrs_road RESTART IDENTITY")
+    # Only the roads built here: NAP roads (reference.py) keep their official segments.
+    conn.execute("TRUNCATE szelveny.lrs_road")
+    conn.execute("DELETE FROM szelveny.road_segment WHERE source_id = 'osm'")
     conn.execute("CREATE TEMP TABLE seg_in (road_id int, sequence int, km_from numeric, "
                  "km_to numeric, g bytea, km_quality text)")
     with conn.cursor().copy("COPY seg_in FROM STDIN") as copy:
