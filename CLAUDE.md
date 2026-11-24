@@ -48,7 +48,7 @@ Every new source gets a manifest (`data/raw/<source>/manifest.json`) with licenc
 - OSM/Overture-derived layers: ODbL (share-alike). **Keep them in separate files from NAP and other non-ODbL layers**, so neither licence is forced onto the other.
 - NAP layers: ÁSZF §32, credited as above.
 - Magyar Közút annual road tables on kozadatportal.hu: **CC Non-Commercial**. Keep them separate and label them non-commercial in downloads.
-- EuroRegionalMap (Open Maps for Europe; Hungary is in the open release): open licence, token in `.env` as `ERM_TOKEN`. Use it as a cross-check.
+- EuroRegionalMap (Open Maps for Europe): open licence (attribution), token in `.env` as `ERM_TOKEN`. Checked 2026-11-24: **Hungary is not in the open 2026 release** (only border segments), so it can't cross-check Hungarian roads; re-check with the next annual release.
 
 ## Layout (inherited from Bornă; changes listed)
 - `pipeline/szelveny/`: Python 3.12 package, one module per Makefile target.

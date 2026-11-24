@@ -74,7 +74,7 @@ All downloads write manifests (licence, terms URL and date, attribution). NAP fe
 | KSH STADAT 24.1.2.1, 24.1.1.30 | ✅ `raw.ksh_county_roads`, `raw.ksh_network` (CC BY 4.0) |
 | kozadatportal: Magyar Közút tables | ✅ `data/raw/kozut_nc/`, latest year of 7 datasets, **CC BY-NC 2.0**, kept separate; static, fetched once |
 | Eurostat GISCO (NUTS, LAU) | ✅ `raw.gisco_nuts` (20 counties), `raw.gisco_lau` (3,155 settlements). **Non-commercial** terms; owner approved 2026-11-24 (Szelvény is not used commercially) |
-| EuroRegionalMap | ⏸ needs the owner's `ERM_TOKEN` in `.env`; licence page to confirm |
+| EuroRegionalMap | ✗ **Hungary is not in the open 2026 release** (downloaded 2026-11-24: no HU road features, only 13 border segments; no HU metadata). Licence fine (attribution). Not usable as a cross-check; the WFS token from Bornă returns 401 |
 | TENtec | ⏸ the public page offers PDF maps only, no GIS download or reuse terms found |
 
 **NAP download method (owner, 2026-11-24):** `nap.py` may call each subscribed package's documented WFS link (the "Adatelérés" URLs on its metadata page; layer names in `data/raw/nap/manifest.json`) directly, weekly at most, with caching and backoff. No other GeoServer/WFS queries without asking.
@@ -90,7 +90,7 @@ All downloads write manifests (licence, terms URL and date, attribution). NAP fe
 - 3.1 `reference.py`: 6,430 NAP roads, 22,341 sections with official szelvény, carriageway and NAP's own strings; class and administrator (kezelő) per road. 32,742 km excl. cycle paths vs KSH 2025 32,708 km.
 - 3.2 `lrs.py` adds OSM-numbered roads NAP lacks (none ≥ 1 km on this data, 13 to review); `local.py`: 104,280 local roads by name + settlement (km_quality `none`), on the map only for now.
 - 3.3 NAP attributes as events (~224k: lanes, speed limits, surface, width, AADT 2025, built-up, one-way, truck limits, bridges) and point objects (km posts, bridges, rest areas). The export shows NAP's value where NAP has one; OSM's stay in the database with their source.
-- 3.4 QA (`data/out/qa/README.md`): NAP vs KSH per county within ±0.6% except Szabolcs-Szatmár-Bereg (+2.0%); NAP vs OSM geometry median 0.2 m, 99.9% within 10 m; 38 stretches where OSM is > 30 m off or missing; 26 NAP numbers no OSM way carries. Not published: contact the OSM community first. NAP vs EuroRegionalMap waits for the token.
+- 3.4 QA (`data/out/qa/README.md`): NAP vs KSH per county within ±0.6% except Szabolcs-Szatmár-Bereg (+2.0%); NAP vs OSM geometry median 0.2 m, 99.9% within 10 m; 38 stretches where OSM is > 30 m off or missing; 26 NAP numbers no OSM way carries. Not published: contact the OSM community first. NAP vs EuroRegionalMap is not possible: Hungary is not in the open release.
 - 3.5 `tests/lrs_checkpoints.csv`: 29 NAP km posts (4 categories, 20 counties), all within 20 m (median 0–5 m). NAP km posts overall: median 1.3 m; OSM km posts (independent): median 17.7 m.
 
 ## Phase 4: Portal MVP

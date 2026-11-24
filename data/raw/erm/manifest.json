@@ -1,0 +1,17 @@
+{
+  "source_id": "erm",
+  "name": "EuroRegionalMap 2026 (EuroGeographics, Open Maps for Europe), full Europe GeoPackage",
+  "url": "https://www.mapsforeurope.org/datasets/euro-regional-map",
+  "licence": "EuroGeographics Open Data Licence (attribution; commercial use allowed)",
+  "attribution": "© EuroGeographics 2026",
+  "version": "2026 (data 2026-07)",
+  "retrieved_at": "2026-11-24T16:09:24+00:00",
+  "files": [
+    "erm_gpkg.zip"
+  ],
+  "terms_url": "https://www.mapsforeurope.org/licence",
+  "terms_date": "2026-11-24",
+  "terms_copy": "docs/legal/EuroGeographics_Open_Data_Licence_2026-11-24.txt",
+  "hungary_coverage": "none: RoadL has no ICC='HU' features (only 11 'HU#SK' and 2 'AT#HU' border segments); no HU metadata in the release. Not usable as a cross-check for Hungarian road numbers.",
+  "note": "Downloaded once 2026-11-24 with the owner's download link (token not stored). The WFS token copied from Bornă returned 401."
+}
