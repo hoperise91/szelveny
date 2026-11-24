@@ -1,0 +1,27 @@
+EuroGeographics Open Data Licence
+Copied 2026-11-24 from https://www.mapsforeurope.org/licence (page text; the page is rendered
+by JavaScript). Covers EuroGlobalMap, EuroRegionalMap, EuroDEM, Open Gazetteer, Open Cadastral
+Map and the High-value large-scale pan European prototype.
+
+Summary of the terms that matter for Szelvény (full text at the URL above):
+- Grant: worldwide, royalty-free, perpetual, non-exclusive licence to reproduce, communicate to
+  the public, adapt, distribute, extract and reutilise the Dataset, for any legal purpose
+  including commercial exploitation.
+- Condition: include the attribution statement in every use:
+  "This dataset includes Intellectual Property from European National Mapping and Cadastral
+  Authorities and is licensed on behalf of these by EuroGeographics. Original dataset is
+  available for free at https://www.mapsforeurope.org. Terms of the licence available at
+  https://www.mapsforeurope.org/licence All attribution statements can be found here."
+  Short form where the long one cannot be used: "© EuroGeographics 2026."
+- Sub-licences must carry the same acknowledgement requirement, with no additional conditions.
+- No right to the "EuroGeographics" trademark; no suggestion of official status or endorsement;
+  do not mislead about the Dataset or its source; do not distort it so it becomes erroneous.
+- Breach ends the licence automatically. The Licensor may discontinue availability.
+- No warranty; Licensor not liable for errors or omissions.
+- Governed by Belgian law, courts of Brussels.
+
+FAQ (https://www.mapsforeurope.org/frequently-asked-questions, 2026-11-24): "This licence allows
+users to distribute, remix, adapt, and build upon the material in any medium or format, so long
+as attribution is given to the creator. The license allows for commercial use." Services use
+token authentication (?token=...), one token per user for all services; datasets are updated
+annually.
