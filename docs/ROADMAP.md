@@ -32,6 +32,7 @@
    - **Subscribed 2026-11-24:** all 9 *Must* + 4 *Should* packages (HTTP, Pull). Metadata, providers, cadence (all weekly) and the per-package licence check are in `data/raw/nap/manifest.json`: no package states its own licence, so ÁSZF §32 applies; *Országos közúthálózat* is flagged an EU high-value dataset. Field documentation: `docs/nap/NAP_statikus_adatcsomagok_leirasa_2026-02-04.pdf`.
 3. Download each once by hand. Note its format and update cadence, and **check its metadata for a provider-specific licence** (CLAUDE.md, "Per-package check").
 4. Pick the name and register the domain. Create the GitHub repo, a Cloudflare Pages project and an R2 bucket.
+   - **Set up 2026-11-24:** name Szelvény, domain **szelvenykm.hu** (ordered at hungariandomains.com / Lanisys Kft.; the .hu registry shows it created 2026-11-24, confirmation pending). GitHub `hoperise91/szelveny` (private for now). Cloudflare Pages project `szelveny` → https://szelveny.pages.dev (from GitHub main; root `web`, `npm run build`, output `dist`, `NODE_VERSION=24`; auto-deploys on push). R2 buckets `szelveny-data` (site data, to be served at `data.szelvenykm.hu`) and `szelveny-raw` (private saved copies). Weekly refresh workflow disabled until the R2 keys are in `.env` and GitHub secrets.
 
 **Decision gate:** open the national network package and look for **chainage fields** (road number + start/end szelvény per section).
 - **Present →** the reference network is official from the start; Phase 3 shrinks to loading and QA. Estimate: **~2 weeks** to public beta at 6–10 h/week.
