@@ -1,0 +1,553 @@
+{
+  "source_id": "nap",
+  "name": "Nemzeti Adathozzáférési Pont (NAP), Magyar Közút static road packages",
+  "url": "https://napportal.kozut.hu/",
+  "licence": "NAP ÁSZF (adatfelhasználói) 2024-03-01 §32: storage, redistribution, publication and commercial use permitted",
+  "terms_url": "https://napportal.kozut.hu/#/download/useful-download (Adatfelhasználói ÁSZF)",
+  "terms_date": "2024-03-01",
+  "terms_copy": "docs/legal/NAP_ASZF_felhasznalo_2024-03-01.pdf",
+  "attribution": "Forrás: Magyar Közút Nonprofit Zrt. – Nemzeti Adathozzáférési Pont (NAP)",
+  "disclaimer": "tájékoztató jellegű, nem hivatalos forrás / informational, not an official source (ÁSZF §23, §26)",
+  "account": "owner's single NAP data-user account (ÁSZF §17); credentials only in .env / GitHub secrets",
+  "field_documentation": "docs/nap/NAP_statikus_adatcsomagok_leirasa_2026-02-04.pdf",
+  "metadata_checked": "2026-11-24",
+  "retrieved_at": "2026-11-24",
+  "packages": [
+    {
+      "nap_id": 30,
+      "name": "Országos közúthálózat",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/30",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_21616037:wfs_21616037",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2019-09-15",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút",
+        "kerékpárút"
+      ],
+      "coverage": "metadata says HU1 only, but the data covers the whole country (checked 2026-11-24)",
+      "description": "Nagy értékű adatkészlet (EU high-value dataset).",
+      "fields": "kszam, kkod, vkod, pkod, kutka, kszelv, vszelv, szak_tipus, szak_street, szak_irany, szak_label, szho",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 91,
+      "name": "Szelvényjelek",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/91",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_216411032:wfs_216411032",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2022-05-11",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, pkod, kmjel",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 48,
+      "name": "Közúti azonosítópontok",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/48",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "Magyar Közút Nonprofit Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_23061180:wfs_23061180",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2019-09-25",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút",
+        "kerékpárút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kod, kszamok",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 49,
+      "name": "Közút neve, kategóriája és kezelője",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/49",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_23061194:wfs_23061194",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2019-09-25",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút",
+        "kerékpárút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, utnev, kutka, utkategoria, kezelo",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 90,
+      "name": "Összes gépjármű forgalmi sávok száma",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/90",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_216410505:wfs_216410505",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2022-05-11",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, pkod, kszelv, vszelv, savossz",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 89,
+      "name": "Sebességkorlátozás",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/89",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_216279007:wfs_216279007",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2022-05-10",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, pkod, kszelv, vszelv, sebkorl, sebkir, sebkieg",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 47,
+      "name": "Burkolat típusa, szélessége",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/47",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_23061166:wfs_23061166",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2019-09-25",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút",
+        "kerékpárút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, pkod, kszelv, vszelv, rbtsz, rbtip",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 92,
+      "name": "Éves keresztmetszeti forgalmi adatok",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/92",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "Magyar Közút Nonprofit Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_216414971:wfs_216414971",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2022-05-11",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, pkod, kszelv, vszelv, asz, anf, oj, ongj2, ev",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 111,
+      "name": "Lakott területi szakaszok",
+      "priority": "must",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/111",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "Magyar Közút Nonprofit Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_112990483:wfs_112990483",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2023-07-18",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, pkod, kszelv, vszelv, szakjel, kutka",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 132,
+      "name": "Egyirányú útpályák",
+      "priority": "should",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/132",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_270531444:wfs_270531444",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2024-01-11",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "Az országos közúthálózat egyirányú szakaszai.",
+      "fields": "kszam, pkod, kszelv, vszelv, irany",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 50,
+      "name": "Hídhasználati feltételek",
+      "priority": "should",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/50",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_23061762:wfs_23061762",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2019-09-25",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút",
+        "kerékpárút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, pkod, kszelv, vszelv, hszam, hnev, hnem, hhely, huzemtb, hkorlt1-6, hkorle1-6",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 200,
+      "name": "Tehergépjárművekre vonatkozó korlátozások",
+      "priority": "should",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/200",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Áruszállítás támogatása (+1)",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_1174721572:wfs_1174721572",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2026-02-05",
+      "network": [
+        "gyorsforgalmi út",
+        "főút",
+        "mellékút"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "Behajtási korlátozások: tengelyterhelés, összetömeg, tehergépkocsi, járműszerelvény, veszélyes anyagot szállító jármű. Restriction type also in English.",
+      "fields": "kszam, pkod, kszelv, vszelv, sulyk_kod, sulyk, sulyk_en, sulykorl, sulykieg, sulyk2_kod, sulyk2, sulyk2_en, sulykorl2, sulykieg2, kezelo",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    },
+    {
+      "nap_id": 68,
+      "name": "Pihenőparkolók",
+      "priority": "should",
+      "metadata_page": "https://napportal.kozut.hu/#/configuration/data-provider/profile/68",
+      "provider": "Magyar Közút Nonprofit Zrt.",
+      "data_owners": [
+        "AKA Zrt.",
+        "MKIF Zrt.",
+        "Magyar Közút Nonprofit Zrt.",
+        "M6 Duna Koncessziós Zrt.",
+        "M6 Tolna Koncessziós Zrt.",
+        "Mecsek Autópálya-üzemeltető Zrt."
+      ],
+      "type": "statikus",
+      "category": "Statikus úthálózati adatok",
+      "delivery": "WFS (GeoServer, napphub.kozut.hu) via the 'Adatelérés' links on the metadata page",
+      "wfs_layer": "nhp_208622538:wfs_208622538",
+      "formats": [
+        "GML 3 (primary)",
+        "GML 2",
+        "Shape ZIP",
+        "GeoJSON",
+        "KML",
+        "GeoPackage"
+      ],
+      "update_cadence": "hetente (weekly)",
+      "quality_indicator": "megbízható",
+      "published_since": "2022-02-17",
+      "network": [
+        "gyorsforgalmi út"
+      ],
+      "coverage": "HU1, HU2, HU3 (whole country)",
+      "description": "",
+      "fields": "kszam, pkod, kszelv, vszelv, ppnev, ppold, ppa, ppk, ppszgk",
+      "provider_licence": null,
+      "licence_check": "No package-specific licence or conditions in the metadata (the NAP metadata form has no licence field; description and comment checked). ÁSZF §32 applies. No conflict.",
+      "subscribed": "2026-11-24 (HTTP, Pull)"
+    }
+  ],
+  "downloads": [
+    {
+      "nap_id": 30,
+      "file": "orszagos_kozuthalozat/wfs_21616037.gpkg",
+      "format": "GeoPackage",
+      "how": "browser, 'launch' button for (GeoPackage) on the NAP metadata page; one manual download",
+      "retrieved_at": "2026-11-24",
+      "bytes": 21430272,
+      "sha256": "a11cbaaec014df47ddbf5f412a0c038697fe3af5b27fcdfea253bc3cd5a6ae29",
+      "features": 22341,
+      "crs": "EPSG:23700 (HD72 / EOV)",
+      "geometry": "MultiLineString",
+      "chainage": "kszelv / vszelv as 'km + m' strings (e.g. '2 + 548'); szho = registered section length in metres"
+    }
+  ]
+}

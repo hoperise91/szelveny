@@ -2,6 +2,8 @@
 data/**
 !data/**/
 !data/**/.gitkeep
+# Source manifests (licence, terms, attribution, retrieval date) are tracked
+!data/raw/*/manifest.json
 
 # Python
 .venv/

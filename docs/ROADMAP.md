@@ -29,12 +29,15 @@
    - *Skip:* the four E-TÉR network packages (likely duplicates of the national network) and the BPK (Budapest Közút) packages (2019, some list no data provider).
    - Delivery: WFS / GML 3, with Shape ZIP, GeoJSON and GeoPackage downloads offered. The main road package says it's updated weekly. Providers: Magyar Közút plus the motorway concession companies (AKA, MKIF, M6 Duna, M6 Tolna, Mecsek), so do the per-package licence check for each.
    - **Account status:** registered 2026-11-21, **approved by 2026-11-24**. Data access is open through NAP's documented interface; credentials go in `.env` only.
+   - **Subscribed 2026-11-24:** all 9 *Must* + 4 *Should* packages (HTTP, Pull). Metadata, providers, cadence (all weekly) and the per-package licence check are in `data/raw/nap/manifest.json`: no package states its own licence, so ÁSZF §32 applies; *Országos közúthálózat* is flagged an EU high-value dataset. Field documentation: `docs/nap/NAP_statikus_adatcsomagok_leirasa_2026-02-04.pdf`.
 3. Download each once by hand. Note its format and update cadence, and **check its metadata for a provider-specific licence** (CLAUDE.md, "Per-package check").
 4. Pick the name and register the domain. Create the GitHub repo, a Cloudflare Pages project and an R2 bucket.
 
 **Decision gate:** open the national network package and look for **chainage fields** (road number + start/end szelvény per section).
 - **Present →** the reference network is official from the start; Phase 3 shrinks to loading and QA. Estimate: **~2 weeks** to public beta at 6–10 h/week.
 - **Absent →** reuse Bornă's calibration (control points: section ends, KIRA-style km posts in OSM, counting-station sections). Estimate: **~4 weeks**.
+
+**Result (2026-11-24): Present.** *Országos közúthálózat* (GeoPackage, 22,341 sections, native EPSG:23700) has `kszam` (road number), `pkod` (carriageway 0/1/2), `kutka` (category), `kszelv`/`vszelv` (start/end szelvény as `"km + m"`, e.g. `"2 + 548"`) and `szho` (registered length, m) on every row. Geometry check: 98% of sections are within 2% of `szho` and per-category totals agree within ~1 km (36,250 km incl. both carriageways of dual roads, cycle paths and junction ramps). The attribute packages use the same `kszam`/`pkod`/`kszelv`/`vszelv` keys, so they attach as linear events without map matching.
 
 ## Phase 1: Fork and strip Bornă (one session)
 1. Copy the Bornă repo into this folder (fresh git history, MIT licence kept, credit Bornă in the README).
