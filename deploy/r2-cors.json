@@ -1,0 +1,9 @@
+[
+  {
+    "AllowedOrigins": ["https://bornakm.ro", "https://www.bornakm.ro", "https://borna-6h1.pages.dev", "https://*.borna-6h1.pages.dev", "http://localhost:4321"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["Range", "If-Match", "If-None-Match"],
+    "ExposeHeaders": ["ETag", "Content-Length", "Content-Range", "Accept-Ranges"],
+    "MaxAgeSeconds": 86400
+  }
+]

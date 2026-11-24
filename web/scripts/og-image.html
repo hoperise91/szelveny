@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- Source of public/og-image.png (link previews: iMessage, WhatsApp, Facebook…). Render with:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars \
+       --window-size=1200,630 --screenshot=public/og-image.png scripts/og-image.html -->
+<html lang="ro">
+<head>
+<meta charset="utf-8" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@500&display=block" rel="stylesheet" />
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+  body { background: #f6f3ec; color: #1d1c1a; font-family: Barlow, sans-serif;
+         display: flex; align-items: center; gap: 64px; padding: 0 110px; box-sizing: border-box; position: relative; }
+  svg { width: 230px; height: 314px; flex: none; }
+  h1 { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 190px; line-height: .9; margin: 0; letter-spacing: -1px; }
+  p { font-size: 42px; line-height: 1.25; margin: 22px 0 0; color: #5b574f; max-width: 640px; }
+  .url { position: absolute; left: 110px; bottom: 44px; font-size: 30px; color: #8d887d; }
+  .bands { position: absolute; left: 0; right: 0; top: 0; height: 16px; display: flex; }
+  .bands i { flex: 1; }
+</style>
+</head>
+<body>
+  <div class="bands"><i style="background:#0f7b45"></i><i style="background:#c8102e"></i><i style="background:#1d5fbf"></i><i style="background:#b8800f"></i></div>
+  <svg viewBox="0 0 22 30"><path d="M3 9 Q3 2 11 2 Q19 2 19 9 Z" fill="#c8102e"/><rect x="3" y="9" width="16" height="19" rx="1.5" fill="#fffdf8" stroke="#1d1c1a" stroke-width="1.6"/><path d="M3 9 Q3 2 11 2 Q19 2 19 9" fill="none" stroke="#1d1c1a" stroke-width="1.6"/><rect x="6.5" y="14" width="9" height="2" fill="#1d1c1a"/><rect x="6.5" y="19" width="6" height="2" fill="#1d1c1a"/></svg>
+  <div>
+    <h1>Bornă</h1>
+    <p>Baza de date deschisă a drumurilor din România</p>
+  </div>
+  <div class="url">bornakm.ro</div>
+</body>
+</html>

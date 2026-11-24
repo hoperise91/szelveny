@@ -1,0 +1,114 @@
+# Weekly refresh (ROADMAP Phase 4.1): rebuild the network from fresh public data, check it,
+# publish to R2 only if every check passes, and open an issue with the weekly note
+# (GitHub emails it to the repo owner).
+name: Weekly refresh
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"   # Mondays 03:00 UTC (05:00 or 06:00 in Romania)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: weekly-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash -el {0}   # login shell, so the micromamba tools are on PATH
+    env:
+      # Overture is not used after import (only for exploration), so the weekly run skips it.
+      SOURCES: osm gisco ins_trn139a aadt_end   # what `make import` loads (HG 540 is read by `make register`)
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: borna
+          create-args: python=3.12 osm2pgsql>=2 gdal libgdal-pg tippecanoe rclone   # libgdal-pg: ogr2ogr → PostGIS
+          cache-environment: true
+
+      - name: Start PostGIS
+        run: make db-up
+
+      - name: Download and import public sources
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          # When a server refuses CI (legislatie.just.ro always, Geofabrik at times), use the copy
+          # in the private bucket (saved weekly by the owner's Mac, `make fetch-install`) and say so.
+          mkdir -p data/out/refresh
+          # Geofabrik refuses some CI machines: try twice, then use the copy the owner's Mac saved
+          # this week (scripts/weekly-fetch.sh); the note says which OSM date was used.
+          if ! make download SOURCES=osm; then
+            sleep 120
+            if ! make download SOURCES=osm; then
+              if make restore-raw S=osm; then
+                echo osm >> data/out/refresh/fallbacks
+              else
+                echo "The OpenStreetMap download from Geofabrik failed and there is no saved copy." > data/out/refresh/unreachable
+                exit 1
+              fi
+            fi
+          fi
+          for s in hg540 gisco ins_trn139a aadt_end; do
+            timeout 600 make download SOURCES=$s || { make restore-raw S=$s && echo $s >> data/out/refresh/fallbacks; }
+          done
+          make import
+
+      - name: Build the network
+        run: |
+          make register
+          # Accuracy first: a pass that keeps every 5th milestone out of calibration and measures
+          # the error at them (holdout.json → accuracy.json); then the full build that is published.
+          make lrs ARGS=--holdout
+          make lrs attributes objects qa tiles
+
+      - name: Unit tests
+        run: make test
+
+      - name: Compare with the live data and run the checks
+        run: make refresh ARGS="--run-url $RUN_URL" || test "$(cat data/out/refresh/status)" = held
+
+      - name: Publish to R2
+        if: hashFiles('data/out/refresh/status') != ''
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          if [ "$(cat data/out/refresh/status)" = published ]; then make deploy-data; else echo "held back: not publishing"; fi
+
+      - name: Weekly note
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          day=$(date -u +%F)
+          status=$(cat data/out/refresh/status 2>/dev/null || echo failed)
+          if [ "$status" = published ] && [ "${{ job.status }}" != success ]; then status=failed; fi
+          case $status in
+            published) title="Weekly refresh $day: published" ;;
+            held)      title="Weekly refresh $day: held back" ;;
+            *)         title="Weekly refresh $day: failed"
+                       { printf '**Failed**: the run stopped before it could finish, so nothing on bornakm.ro changed.\n\n'
+                         [ -f data/out/refresh/unreachable ] && { cat data/out/refresh/unreachable; echo "Next Monday's run will try again; no action needed unless it keeps happening."; echo; }
+                         printf '[Run log](%s)\n' "$RUN_URL"; } > note.md ;;
+          esac
+          [ -f note.md ] || cp data/out/refresh/report.md note.md
+          printf '\n@%s\n' "${{ github.repository_owner }}" >> note.md
+          gh label create weekly-refresh --color 0E8A16 --description "Weekly data refresh" --force
+          for n in $(gh issue list --label weekly-refresh --state open --json number --jq '.[].number'); do
+            gh issue close "$n" --reason completed
+          done
+          gh issue create --title "$title" --body-file note.md --label weekly-refresh

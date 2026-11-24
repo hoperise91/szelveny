@@ -1,0 +1,19 @@
+{
+  "name": "borna-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^7.4.13",
+    "maplibre-gl": "^6.19.0",
+    "pmtiles": "^4.5.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "^6.0.3"
+  }
+}

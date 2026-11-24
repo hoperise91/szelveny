@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Bornă weekly fetch helper. Installed by `make fetch-install` into ~/Library/LaunchAgents/.
+     Runs scripts/weekly-fetch.sh every 3 hours while the Mac is awake (the script itself does the
+     work at most once every 6 days). Remove with `make fetch-uninstall`. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>ro.bornakm.fetch</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>REPO/scripts/weekly-fetch.sh</string></array>
+  <key>StartInterval</key><integer>10800</integer>
+  <key>RunAtLoad</key><true/>
+  <key>LowPriorityIO</key><true/>
+  <key>Nice</key><integer>10</integer>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+  <key>StandardErrorPath</key><string>REPO/data/out/fetch/launchd.err</string>
+</dict>
+</plist>

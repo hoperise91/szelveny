@@ -1,0 +1,111 @@
+---
+import Base from "../layouts/Base.astro";
+import { countyName } from "../lib/counties";
+import { CONTACT_EMAIL, routes, strings, type Lang } from "../lib/i18n";
+import { type IndexRow, hasStaticPage, roadHref } from "../lib/roads";
+import { breadcrumbs, roadDescription, roadTitle } from "../lib/seo";
+
+// Without `row`: the client-only page /drum/?r=KEY (kept for old links; not indexed).
+// With `row`: a prerendered page /drum/KEY/ with the basics in the HTML, filled in by the script.
+interface Props { lang: Lang; row?: IndexRow; others?: IndexRow[] }
+const { lang, row, others = [] } = Astro.props;
+const s = strings[lang];
+const S = s as Record<string, string>;
+const other: Lang = lang === "ro" ? "en" : "ro";
+
+// "Report a mistake": a mailto with the road in the subject (outside <main>, which the script re-renders).
+const reportHref = (ref: string) =>
+  `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(s.report_subject.replace("{r}", ref))}`;
+
+let seo = {};
+let othersTitle = "";
+if (row) {
+  const [key, ref, county, cat] = row;
+  const alt = (l: Lang) => (hasStaticPage(l, cat) ? `${routes[l].road}${encodeURIComponent(key)}/` : undefined);
+  seo = {
+    title: roadTitle(row, lang),
+    description: roadDescription(row, lang),
+    alternates: { ro: alt("ro"), en: alt("en") },
+    switchHref: roadHref(routes[other].road, other, key, cat),
+    jsonLd: [breadcrumbs([
+      { name: "Bornă", path: routes[lang].map },
+      ...(county ? [{ name: countyName(county), path: `${routes[lang].map}?q=${encodeURIComponent(countyName(county))}` }] : []),
+      { name: ref, path: `${routes[lang].road}${encodeURIComponent(key)}/` },
+    ])],
+  };
+  othersTitle = county
+    ? s.other_roads_county.replace("{c}", countyName(county))
+    : s.other_roads_cat.replace("{c}", S[`cat_${cat}`] ?? cat);
+}
+---
+<Base lang={lang} page="road" title={s.road_page} noindex={!row} {...seo}>
+  <main class="page road-page" id="road" data-lang={lang} data-strings={JSON.stringify(s)}
+    data-map-url={routes[lang].map} data-road-url={routes[lang].road} data-key={row?.[0]}>
+    {row ? (
+      <>
+        <p class="small"><a href={`${routes[lang].map}?r=${encodeURIComponent(row[0])}`}>← {s.open_on_map}</a></p>
+        <div class="rp-head">
+          <span class="shield lg" data-cat={row[3]}>{row[1]}</span>
+          <div><h1><span class="visually-hidden">{row[1]} · </span>{S[`cat_${row[3]}`] ?? row[3]}</h1>
+            <div class="muted">{row[2] ? countyName(row[2]) : s.national_road}</div></div>
+        </div>
+        <p class="rp-route">{row[4]}</p>
+        {!row[2] && row[7]?.length > 0 && (
+          <p>{s.through}: {row[7].map((c) => countyName(c)).join(", ")}</p>
+        )}
+        <p class="muted" id="road-loading">{s.loading}</p>
+      </>
+    ) : (
+      <p class="muted" id="road-loading">{s.loading}</p>
+    )}
+  </main>
+  {row && (
+    <p class="page road-report small"><a href={reportHref(row[2] ? `${row[1]} (${countyName(row[2])})` : row[1])}>{s.report_error} →</a></p>
+  )}
+  {row && others.length > 0 && (
+    <nav class="page road-others" aria-label={othersTitle}>
+      <h2>{othersTitle}</h2>
+      <ul>
+        {others.map((o) => (
+          <li><a href={roadHref(routes[lang].road, lang, o[0], o[3])}><span class="shield" data-cat={o[3]}>{o[1]}</span> {o[4]}</a></li>
+        ))}
+      </ul>
+    </nav>
+  )}
+</Base>
+
+<script>
+  import { initRoadPage } from "../scripts/road-page";
+  initRoadPage(document.getElementById("road")!);
+</script>
+
+<style is:global>
+  .road-page { max-width: 1120px; }
+  .road-report { max-width: 1120px; padding-top: 0; padding-bottom: 0; }
+  .road-others { max-width: 1120px; padding-top: 0; }
+  .road-others h2 { font-size: 18px; }
+  .road-others ul { list-style: none; padding: 0; margin: 0; columns: 2 320px; column-gap: 24px; font-size: 14px; }
+  .road-others li { break-inside: avoid; padding: 3px 0; }
+  .road-others a { color: var(--ink-2); text-decoration: none; }
+  .road-others a:hover { text-decoration: underline; }
+  .rp-head { display: flex; gap: 16px; align-items: center; margin: 4px 0 6px; }
+  .rp-head h1 { font-size: 34px; margin: 0; }
+  .rp-route { font-size: 17px; color: var(--ink-2); margin: 6px 0 22px; max-width: 80ch; }
+  .rp-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+  .rp-map { height: 340px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); }
+  .rp-facts { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; font-size: 14.5px; }
+  .rp-facts dt { color: var(--ink-3); }
+  .rp-facts dd { margin: 0; }
+  .rp-goto { display: flex; gap: 8px; margin-top: 16px; }
+  .rp-goto input { flex: 1; padding: 9px 11px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); font-family: var(--font-mono); }
+  .rp-strip { margin-top: 8px; padding: 18px 18px 10px; }
+  .rp-note { font-size: 13px; color: var(--ink-3); margin: 4px 0 0; }
+  details.attr { border-top: 1px solid var(--line); padding: 10px 0; }
+  details.attr summary { cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; }
+  details.attr summary .n { font: 12px var(--font-mono); color: var(--ink-3); font-weight: 400; }
+  details.attr .table-wrap { margin-top: 10px; max-height: 360px; overflow: auto; }
+  @media (max-width: 900px) {
+    .rp-grid { grid-template-columns: 1fr; }
+    .rp-head h1 { font-size: 28px; }
+  }
+</style>

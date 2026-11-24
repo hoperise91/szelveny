@@ -1,0 +1,1 @@
+"""Bornă data pipeline."""

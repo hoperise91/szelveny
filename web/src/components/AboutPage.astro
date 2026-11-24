@@ -1,0 +1,91 @@
+---
+import Base from "../layouts/Base.astro";
+import { AUTHOR, CONTACT_EMAIL, routes, strings, type Lang } from "../lib/i18n";
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+const ro = lang === "ro";
+---
+<Base lang={lang} page="about" title={ro ? "Despre Bornă: surse, licențe și metodă" : "About Bornă: sources, licences and method"} description={s.meta_about}>
+  <main class="page about" data-strings={JSON.stringify(s)} id="about">
+    <h1>{ro ? "Despre Bornă" : "About Bornă"}</h1>
+    <p class="lead">
+      {ro
+        ? "Bornă este o bază de date deschisă a drumurilor publice din România. Orice drum poate fi găsit după număr și poziție kilometrică, „DN1 km 27+400”, cu caracteristicile sale și sursa fiecărei valori."
+        : "Bornă is an open database of Romania's public roads. Any road can be found by its number and kilometre position, “DN1 km 27+400”, with its properties and the source of every value."}
+    </p>
+
+    <h2>{ro ? "Cum funcționează" : "How it works"}</h2>
+    <ol class="steps">
+      <li><b>{ro ? "Registrul oficial." : "The official register."}</b> {ro
+        ? "Lista drumurilor, cu traseele și pozițiile kilometrice, vine din anexele HG 540/2000 (forma consolidată), citite automat de pe legislatie.just.ro."
+        : "The list of roads, with routes and km positions, comes from the annexes of HG 540/2000 (consolidated text), read automatically from legislatie.just.ro."}</li>
+      <li><b>{ro ? "Geometria." : "The geometry."}</b> {ro
+        ? "Fiecare drum din registru este găsit în OpenStreetMap după numărul său și transformat într-o singură linie."
+        : "Each register road is found in OpenStreetMap by its number and turned into a single line."}</li>
+      <li><b>{ro ? "Kilometrajul." : "The km."}</b> {ro
+        ? "Km este fixat în puncte cunoscute — limitele de județ din HG 540, intersecțiile cu drumurile de la capete și bornele kilometrice din OpenStreetMap — și întins liniar între ele."
+        : "km is pinned at known points — county borders from HG 540, junctions with the roads at either end and km-stones mapped in OpenStreetMap — and stretched linearly between them."}</li>
+      <li><b>{ro ? "Caracteristicile." : "The properties."}</b> {ro
+        ? "Îmbrăcămintea, benzile, viteza maximă, podurile și traficul sunt așezate pe intervale de km, fiecare cu sursa, data și licența sa."
+        : "Surface, lanes, speed limit, bridges and traffic are placed on km ranges, each with its source, date and licence."}</li>
+    </ol>
+
+    <h2>{ro ? "Cât de precis este" : "How accurate it is"}</h2>
+    <div class="quality-cards">
+      {(["calibrated", "interpolated", "estimated"] as const).map((q) => (
+        <div class="card"><span class="q" data-q={q}><b>{s[`q_${q}`]}</b></span><p class="small muted">{s[`q_${q}_long`]}</p></div>
+      ))}
+    </div>
+    <p id="accuracy" class="muted"></p>
+
+    <h2>{s.sources}</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>{s.source}</th><th>{ro ? "Versiune" : "Version"}</th><th>{s.licence}</th></tr></thead>
+      <tbody id="sources"><tr><td colspan="3" class="muted">{s.loading}</td></tr></tbody>
+    </table></div>
+
+    <h2>{ro ? "Licențe" : "Licences"}</h2>
+    <p>{ro
+      ? "Codul: MIT. Rețeaua derivată din OpenStreetMap: ODbL (© OpenStreetMap contributors). Registrul HG 540: act normativ, domeniu public. Celelalte surse: termenii lor originali, indicați mai sus."
+      : "Code: MIT. The network derived from OpenStreetMap: ODbL (© OpenStreetMap contributors). The HG 540 register: an official act, public domain. Other sources: their original terms, listed above."}</p>
+    <h2>Contact</h2>
+    <p>{ro ? "Bornă este un proiect personal al lui " : "Bornă is a personal project by "}{AUTHOR.name}{" "}(<a href={AUTHOR.linkedin} rel="noopener">LinkedIn</a>).</p>
+    <p>{ro
+      ? "Greșeli, drumuri lipsă, corecturi sau cereri de retragere a unor date: "
+      : "Mistakes, missing roads, corrections or requests to take data down: "}<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+    <p class="small muted">{ro
+      ? "Bornă nu este un serviciu oficial. Pentru poziții oficiale, consultați administratorul drumului."
+      : "Bornă is not an official service. For official positions, ask the road's administrator."}</p>
+    <p><a href={routes[lang].map}>← {s.nav_map}</a></p>
+  </main>
+</Base>
+
+<script>
+  import { DATA_URL, fetchSources } from "../lib/roads";
+  const root = document.getElementById("about")!;
+  const ro = document.documentElement.lang === "ro";
+  const esc = (v: unknown) => String(v ?? "").replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+  fetchSources().then((rows) => {
+    root.querySelector("#sources")!.innerHTML = rows.map((r) =>
+      `<tr><td>${r.url ? `<a href="${esc(r.url)}" rel="noopener">${esc(r.name)}</a>` : esc(r.name)}
+        ${r.attribution ? `<div class="small muted">${esc(r.attribution)}</div>` : ""}</td>
+        <td class="mono small">${esc(r.version)}</td><td class="small">${esc(r.licence)}</td></tr>`).join("");
+  });
+  fetch(`${DATA_URL}/accuracy.json`).then((r) => r.ok ? r.json() : null).then((a) => {
+    if (!a) return;
+    root.querySelector("#accuracy")!.textContent = ro
+      ? `Test: ${a.located} borne kilometrice de pe drumurile naționale au fost ascunse la calibrare și apoi căutate după km. Eroare mediană ${Math.round(a.median_m)} m; ${Math.round(a.within_50m_share * 100)}% sub 50 m; 95% sub ${Math.round(a.p95_m)} m. Pe drumurile cu puține puncte de control, abaterea poate ajunge la câteva sute de metri.`
+      : `Test: ${a.located} km-stones on national roads were hidden from calibration and then looked up by their km. Median error ${Math.round(a.median_m)} m; ${Math.round(a.within_50m_share * 100)}% within 50 m; 95% within ${Math.round(a.p95_m)} m. On roads with few control points the drift can reach a few hundred metres.`;
+  });
+</script>
+
+<style>
+  .lead { font-size: 18px; color: var(--ink-2); }
+  .steps { padding-left: 20px; max-width: 72ch; }
+  .steps li { margin-bottom: 10px; }
+  .quality-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  .quality-cards p { margin: 6px 0 0; }
+  @media (max-width: 700px) { .quality-cards { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,165 @@
+---
+import Base from "../layouts/Base.astro";
+import { routes, strings, type Lang } from "../lib/i18n";
+import { DATA_URL } from "../lib/roads";
+import { dataset } from "../lib/seo";
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+const ro = lang === "ro";
+const files = [
+  ["hg540_register.csv", ro ? "Registrul HG 540/2000: toate drumurile, rând cu rând, cu pozițiile km oficiale" : "HG 540/2000 register: every road, row by row, with official km positions", ro ? "domeniu public (act normativ)" : "public domain (official act)"],
+  ["qa_county_lengths.csv", ro ? "Lungimi pe județe: registru vs INS vs OpenStreetMap" : "Lengths per county: register vs INS vs OpenStreetMap", "ODbL"],
+  ["qa_county_surface.csv", ro ? "Îmbrăcămintea pe județe: INS vs OpenStreetMap" : "Surface per county: INS vs OpenStreetMap", "ODbL"],
+  ["qa_gaps_by_county.csv", ro ? "Drumuri din registru lipsă sau incomplete în OpenStreetMap" : "Register roads missing or incomplete in OpenStreetMap", "ODbL"],
+  ["qa_osm_refs_not_in_register.csv", ro ? "Numere de drum din OpenStreetMap care nu apar în registru" : "OpenStreetMap road numbers missing from the register", "ODbL"],
+];
+const dataBase = DATA_URL.startsWith("http") ? DATA_URL : "https://data.bornakm.ro";
+const ODBL = "https://opendatacommons.org/licenses/odbl/1-0/";
+const jsonLd = [
+  dataset({
+    name: ro ? "Rețeaua rutieră a României cu poziții kilometrice (Bornă)" : "Romania's road network with kilometre positions (Bornă)",
+    description: ro
+      ? "Rețeaua de drumuri publice a României (autostrăzi, drumuri naționale, județene și comunale) legată de pozițiile kilometrice oficiale din HG 540/2000, construită din OpenStreetMap, plus verificări pe județe."
+      : "Romania's public road network (motorways, national, county and communal roads) linked to the official kilometre positions of HG 540/2000, built from OpenStreetMap, with county-level checks.",
+    pagePath: routes[lang].data,
+    license: ODBL,
+    files: [
+      { url: `${dataBase}/borna.pmtiles`, format: "application/vnd.pmtiles" },
+      ...files.filter(([f]) => f.startsWith("qa_")).map(([f]) => ({ url: `${dataBase}/downloads/${f}`, format: "text/csv" })),
+    ],
+  }),
+  dataset({
+    name: ro ? "Registrul drumurilor județene și comunale HG 540/2000 (CSV)" : "HG 540/2000 county and communal road register (CSV)",
+    description: ro
+      ? "Anexele HG 540/2000 transcrise rând cu rând: fiecare drum județean și comunal din România, cu traseu, poziții kilometrice de început și sfârșit și lungime."
+      : "The annexes of HG 540/2000 transcribed row by row: every county and communal road in Romania with its route, start and end kilometre positions and length.",
+    pagePath: routes[lang].data,
+    license: "https://creativecommons.org/publicdomain/mark/1.0/",
+    files: [{ url: `${dataBase}/downloads/hg540_register.csv`, format: "text/csv" }],
+  }),
+];
+---
+<Base lang={lang} page="data" title={ro ? "Date deschise: rețeaua rutieră a României" : "Open data: Romania's road network"} description={s.meta_data} jsonLd={jsonLd}>
+  <main class="page">
+    <h1>{s.nav_data}</h1>
+    <p class="muted">
+      {ro
+        ? "Tot ce afișează Bornă se poate descărca. Fiecare fișier își păstrează licența sursei."
+        : "Everything Bornă shows can be downloaded. Each file keeps its source's licence."}
+    </p>
+
+    <h2>{ro ? "Descărcări" : "Downloads"}</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>{ro ? "Fișier" : "File"}</th><th>{ro ? "Conținut" : "Contents"}</th><th>{s.licence}</th></tr></thead>
+        <tbody>
+          {files.map(([f, d, l]) => (
+            <tr><td><a class="mono" href={`/data/downloads/${f}`} download data-file>{f}</a></td><td>{d}</td><td class="small">{l}</td></tr>
+          ))}
+          <tr><td><a class="mono" href="/data/borna.pmtiles" download data-file>borna.pmtiles</a></td>
+            <td>{ro ? "Rețeaua cu kilometraj, ca plăci vectoriale (PMTiles)" : "The km-referenced network as vector tiles (PMTiles)"}</td><td class="small">ODbL</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>{ro ? "Actualizări" : "Updates"}</h2>
+    <p class="muted">
+      {ro
+        ? "Datele se reconstruiesc în fiecare săptămână din sursele publice și se publică doar dacă trec verificările de calitate."
+        : "The data is rebuilt every week from the public sources and published only when it passes the quality checks."}
+    </p>
+    <ul id="changes" class="changes" data-lang={lang} data-road={routes[lang].road}>
+      <li class="muted">{ro ? "Se încarcă…" : "Loading…"}</li>
+    </ul>
+
+    <h2>{ro ? "Date pentru programatori" : "Data for developers"}</h2>
+    <p>
+      {ro
+        ? "Fiecare drum are un fișier JSON static, cu segmentele calibrate (pentru căutarea km), caracteristicile de-a lungul km și sursa fiecărei valori:"
+        : "Every road has a static JSON file with its calibrated segments (for km lookup), its properties along the km and the source of every value:"}
+    </p>
+    <div class="table-wrap"><table><tbody>
+      <tr><td class="mono">{DATA_URL}/index.json</td><td>{ro ? "toate drumurile: cheie, număr, județ, categorie, traseu, limite" : "every road: key, number, county, category, route, bounds"}</td></tr>
+      <tr><td class="mono">{DATA_URL}/roads/DN1.json</td><td>{ro ? "un drum național" : "a national road"}</td></tr>
+      <tr><td class="mono">{DATA_URL}/roads/CV-DJ121.json</td><td>{ro ? "un drum județean sau comunal: cod județ + număr" : "a county or communal road: county code + number"}</td></tr>
+      <tr><td class="mono">{DATA_URL}/changes.json</td><td>{ro ? "ce s-a schimbat în fiecare săptămână" : "what changed each week"}</td></tr>
+      <tr><td class="mono">{DATA_URL}/sources.json</td><td>{ro ? "sursele, cu licență și dată" : "the sources, with licence and date"}</td></tr>
+    </tbody></table></div>
+    <p class="small muted">
+      {ro
+        ? "Conversia km ↔ coordonate: în fiecare segment, km variază liniar de-a lungul lungimii segmentului."
+        : "km ↔ coordinates: within each segment, km is linear along the segment's length."}
+    </p>
+  </main>
+</Base>
+
+<script>
+  import { DATA_URL } from "../lib/roads";
+  document.querySelectorAll<HTMLAnchorElement>("a[data-file]").forEach((a) => {
+    a.href = a.getAttribute("href")!.replace(/^\/data/, DATA_URL);
+  });
+
+  type Week = {
+    date: string; osm?: string; roads: number; baseline?: boolean;
+    added?: string[]; removed?: string[]; changed?: number; official?: string[];
+    length?: { key: string; from: number; to: number }[];
+  };
+  const list = document.getElementById("changes")!;
+  const ro = list.dataset.lang === "ro";
+  const roadUrl = list.dataset.road!;
+  const day = (d: string) => new Date(d + "T12:00:00").toLocaleDateString(ro ? "ro-RO" : "en-GB",
+    { day: "numeric", month: "long", year: "numeric" });
+  const km = (x: number) => x.toLocaleString(ro ? "ro-RO" : "en-GB", { maximumFractionDigits: 1 }) + " km";
+  const road = (k: string) => {
+    const a = document.createElement("a");
+    a.href = `${roadUrl}?r=${encodeURIComponent(k)}`;
+    a.textContent = k;
+    return a;
+  };
+
+  function render(weeks: Week[]) {
+    list.replaceChildren();
+    if (!weeks.length) {
+      list.innerHTML = `<li class="muted">${ro ? "Încă nicio actualizare." : "No updates yet."}</li>`;
+      return;
+    }
+    for (const w of weeks.slice(0, 12)) {
+      const li = document.createElement("li");
+      const head = document.createElement("div");
+      head.innerHTML = `<strong>${day(w.date)}</strong> <span class="small muted">· ` +
+        `${ro ? "OpenStreetMap din" : "OpenStreetMap from"} ${w.osm ? day(w.osm) : "?"}</span>`;
+      li.append(head);
+      const items: (string | Node)[][] = [];
+      if (w.baseline) items.push([ro ? `Prima publicare: ${w.roads.toLocaleString("ro-RO")} drumuri.`
+                                     : `First publication: ${w.roads.toLocaleString("en-GB")} roads.`]);
+      if (w.added?.length) items.push([ro ? "Drumuri noi: " : "New roads: ",
+        ...w.added.flatMap((k, i) => (i ? [", ", road(k)] : [road(k)]))]);
+      if (w.official?.length) items.push([ro ? "Intrate în registrul HG 540/2000 (km oficiali): "
+                                              : "Now in the HG 540/2000 register (official km): ",
+        ...w.official.flatMap((k, i) => (i ? [", ", road(k)] : [road(k)]))]);
+      if (w.removed?.length) items.push([ro ? "Drumuri scoase: " : "Removed roads: ", w.removed.join(", ")]);
+      for (const l of w.length ?? []) items.push([road(l.key), `: ${km(l.from)} → ${km(l.to)}`]);
+      if (!w.baseline) items.push([w.changed
+        ? (ro ? `${w.changed} drumuri actualizate în total.` : `${w.changed} roads updated in total.`)
+        : (ro ? "Nicio schimbare." : "No changes.")]);
+      const ul = document.createElement("ul");
+      for (const parts of items) {
+        const item = document.createElement("li");
+        item.append(...parts);
+        ul.append(item);
+      }
+      li.append(ul);
+      list.append(li);
+    }
+  }
+
+  fetch(`${DATA_URL}/changes.json`).then((r) => (r.ok ? r.json() : [])).then(render).catch(() => render([]));
+</script>
+
+<style>
+  .changes { list-style: none; padding: 0; }
+  .changes > li { margin: 0 0 1rem; }
+  .changes ul { margin: 0.25rem 0 0; padding-left: 1.2rem; }
+</style>

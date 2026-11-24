@@ -1,0 +1,8 @@
+---
+import RoadPage from "../../../components/RoadPage.astro";
+import { roadPaths } from "../../../lib/road-paths";
+
+export const getStaticPaths = () => roadPaths("en");
+const { row, others } = Astro.props;
+---
+<RoadPage lang="en" row={row} others={others} />

@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: borna-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-borna}
+      POSTGRES_USER: ${POSTGRES_USER:-borna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-borna}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs once, on first start with an empty volume.
+      - ./pipeline/sql/00_schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-borna} -d ${POSTGRES_DB:-borna}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
