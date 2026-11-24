@@ -92,6 +92,9 @@ refresh: setup ## Compare the new export with the live one, run the checks, writ
 
 R2_BUCKET ?= szelveny-data
 R2_RAW_BUCKET ?= szelveny-raw
+# .env lines may carry a trailing comment: make keeps the spaces before it, so strip them.
+override R2_BUCKET := $(strip $(R2_BUCKET))
+override R2_RAW_BUCKET := $(strip $(R2_RAW_BUCKET))
 SLOW_SOURCES := gisco ksh nap
 SAVED_SOURCES := osm $(SLOW_SOURCES)   # copies in the private bucket, for when a server refuses CI
 # rclone reads its R2 remote from the environment; keys stay out of the echoed command.
