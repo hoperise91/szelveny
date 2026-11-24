@@ -3,7 +3,7 @@ import { countyName } from "./counties";
 import { AUTHOR, CONTACT_EMAIL, routes, strings, type Lang } from "./i18n";
 import type { IndexRow } from "./roads";
 
-export const SITE = "https://szelvenykm.hu";
+export const SITE: string = import.meta.env.PUBLIC_SITE_URL || "https://szelvenykm.hu";
 /** Credit line for NAP data (ÁSZF §32; always shown, though attribution isn't required). */
 export const NAP_CREDIT = "Forrás: Magyar Közút Nonprofit Zrt. – Nemzeti Adathozzáférési Pont (NAP)";
 const abs = (p: string) => new URL(p, SITE).href;
