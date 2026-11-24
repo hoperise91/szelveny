@@ -4,4 +4,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://szelveny.hu/sitemap.xml
+Sitemap: https://szelvenykm.hu/sitemap.xml

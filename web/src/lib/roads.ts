@@ -25,7 +25,8 @@ export interface Road {
   segments: Segment[];
   attributes: Record<string, Event[]>;
   through?: string[]; // counties passed through (ISO 3166-2:HU)
-  objects?: [number, string, string | null, string | null][]; // [km, type, name, ref]
+  // [km, type, name, ref, details: bridge capacity and limits, rest-area side and places, …]
+  objects?: [number, string, string | null, string | null, Record<string, unknown> | null][];
 }
 
 // [key, ref, county, category, route, bbox, status, counties passed through]

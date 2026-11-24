@@ -23,7 +23,7 @@ import requests
 from szelveny.config import DATA_OUT
 from szelveny.tiles import WEB_DATA
 
-LIVE_DATA = "https://data.szelveny.hu"
+LIVE_DATA = "https://data.szelvenykm.hu"
 OUT = DATA_OUT / "refresh"
 HISTORY_KEEP = 104  # weeks of changes kept in changes.json (two years)
 
@@ -194,7 +194,7 @@ def report(cur: dict, changes: dict, problems: list[str], run_url: str | None,
              f"{cur['sources'].get('osm', '?')} · {changes['roads']:,} roads"), ""]
     if held:
         lines += [("The checks below failed, so **last week's data stays online**. "
-                  "Nothing on szelveny.hu changed."), ""]
+                  "Nothing on szelvenykm.hu changed."), ""]
         lines += [f"- {p}" for p in problems] + [""]
     if changes["baseline"]:
         lines += ["First run: this export is the baseline for next week's comparison.", ""]

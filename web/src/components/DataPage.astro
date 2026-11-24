@@ -14,7 +14,7 @@ const files = [
   ["qa_attribute_coverage.csv", hu ? "Jellemzők lefedettsége kategóriánként" : "Attribute coverage per category", "ODbL"],
   ["qa_osm_refs_not_in_network.csv", hu ? "Útszámok az OpenStreetMapben, amelyekhez nincs út a hálózatban" : "OpenStreetMap road numbers with no road in the network", "ODbL"],
 ];
-const dataBase = DATA_URL.startsWith("http") ? DATA_URL : "https://data.szelveny.hu";
+const dataBase = DATA_URL.startsWith("http") ? DATA_URL : "https://data.szelvenykm.hu";
 const ODBL = "https://opendatacommons.org/licenses/odbl/1-0/";
 const jsonLd = [
   dataset({
@@ -71,7 +71,7 @@ const jsonLd = [
         : "Every road has a static JSON file with its chainage-referenced segments (for chainage lookup), its properties along the road and the source of every value:"}
     </p>
     <div class="table-wrap"><table><tbody>
-      <tr><td class="mono">{DATA_URL}/index.json</td><td>{hu ? "minden út: kulcs, útszám, vármegye, kategória, nyomvonal, befoglaló téglalap" : "every road: key, number, county, category, route, bounds"}</td></tr>
+      <tr><td class="mono">{DATA_URL}/index.json</td><td>{hu ? "minden út: kulcs, útszám, megye, kategória, nyomvonal, befoglaló téglalap" : "every road: key, number, county, category, route, bounds"}</td></tr>
       <tr><td class="mono">{DATA_URL}/roads/M1.json</td><td>{hu ? "egy gyorsforgalmi út" : "a motorway"}</td></tr>
       <tr><td class="mono">{DATA_URL}/roads/4512.json</td><td>{hu ? "egy összekötő út (az országos útszámok egyediek)" : "a connecting road (national road numbers are unique)"}</td></tr>
       <tr><td class="mono">{DATA_URL}/changes.json</td><td>{hu ? "mi változott hétről hétre" : "what changed each week"}</td></tr>

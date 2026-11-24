@@ -1,4 +1,4 @@
-// ISO 3166-2:HU county codes (19 vármegye + Budapest) -> names, as in the data files.
+// ISO 3166-2:HU county codes (19 megye + Budapest) -> names, as in the data files.
 export const COUNTIES: Record<string, string> = {
   BK: "Bács-Kiskun", BA: "Baranya", BE: "Békés", BZ: "Borsod-Abaúj-Zemplén", BU: "Budapest",
   CS: "Csongrád-Csanád", FE: "Fejér", GS: "Győr-Moson-Sopron", HB: "Hajdú-Bihar", HE: "Heves",

@@ -40,7 +40,7 @@ Every new source gets a manifest (`data/raw/<source>/manifest.json`) with licenc
 - **CRS:** store geometry in **EPSG:4326**. Compute every length, distance and chainage in **EPSG:23700 (EOV)**. Use constants from `pipeline/szelveny/config.py`; don't hard-code SRIDs.
 - **Linear referencing is the primary key.** Display positions the Hungarian way: road number + szelvény, `M1 12+300`, `8 145+020`, `4512 3+400`. Store them as numeric km (`12.300`, 3 decimals).
 - **Road numbering** (national network): motorways and expressways `M` + number; main roads 1–3 digits; secondary roads (*mellékutak*) 4 digits (*összekötő út*) or 5 digits (*bekötő út*). Local roads have no national number: identify them by name + settlement.
-- **Counties:** ISO 3166-2:HU codes (19 *vármegye* + Budapest).
+- **Counties:** ISO 3166-2:HU codes (19 counties + Budapest). In user-facing Hungarian text say **megye** (the owner's choice), not *vármegye*.
 - **Bilingual.** User-facing text is **Hungarian by default** (`/`), English at `/en/`. Use correct Hungarian diacritics (ő ű with double acute, not õ û or ô).
 
 ## Licensing

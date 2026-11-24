@@ -33,7 +33,7 @@ MANIFEST = DATA_RAW / "nap" / "manifest.json"
 WFS = ("https://napphub.kozut.hu/geoserver/{ws}/{name}/ows?service=wfs&version=1.0.0"
        "&request=GetFeature&resultType=results&typeNames={ws}:{name}"
        "&format_options=CHARSET:UTF-8&outputFormat=gpkg")
-USER_AGENT = "szelveny-pipeline (+https://szelveny.hu; contact@szelveny.hu)"
+USER_AGENT = "szelveny-pipeline (+https://szelvenykm.hu; contact@szelvenykm.hu)"
 MIN_AGE_DAYS = 7      # ÁSZF §37: fetch each static package at most once a week
 PAUSE_S = 5           # between packages
 

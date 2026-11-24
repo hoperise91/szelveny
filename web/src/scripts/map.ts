@@ -457,8 +457,7 @@ export function initMap(root: HTMLElement) {
       const f = map.getLayer("maxspeed") ? map.queryRenderedFeatures(box, { layers: ["maxspeed"] })[0] : undefined;
       const v = f?.properties.v;
       if (v == null) return null;
-      const txt = /^\d+$/.test(String(v)) ? `${v} km/h` : String(v);
-      return f!.properties.s === "kresz" ? `${txt} (${s.general_limit})` : txt;
+      return /^\d+$/.test(String(v)) ? `${v} km/h` : String(v);
     }
     if (mode === "aadt") { const v = at("aadt"); return v != null ? `${num(Number(v), 0)} ${s.vehicles_day}` : null; }
     if (mode === "width") {
@@ -1001,7 +1000,7 @@ export function initMap(root: HTMLElement) {
         }
         case "maxspeed": {
           const e = ev("maxspeed");
-          take(e, (v) => (/^\d+$/.test(v) ? `${v} km/h` : v) + (e?.[3] === "kresz" ? ` (${s.general_limit})` : ""));
+          take(e, (v) => (/^\d+$/.test(v) ? `${v} km/h` : v));
           break;
         }
         case "aadt": take(ev("aadt"), (v) => `${Number(v).toLocaleString(locale)} ${s.vehicles_day}`); break;

@@ -41,9 +41,7 @@ export function bands(road: Road, s: Strings): Band[] {
   });
   out.push({
     id: "maxspeed", label: s.maxspeed,
-    items: ev("maxspeed").map(([f, t, v, src]) => ({
-      f, t, color: speedColor(v), text: `${v} km/h${src === "kresz" ? ` (${s.general_limit})` : ""}`,
-    })),
+    items: ev("maxspeed").map(([f, t, v]) => ({ f, t, color: speedColor(v), text: `${v} km/h` })),
   });
   if (ev("aadt").length) {
     out.push({
@@ -66,6 +64,13 @@ export function bands(road: Road, s: Strings): Band[] {
         const c = parseCurve(v);
         return { f, t, color: CURVE_COLOR[c.cls] ?? "#999", text: `${T[`curve_${c.side}`]}, R ≈ ${c.r} m (${T[`c_${c.cls}`]})` };
       }),
+    });
+  }
+  if (ev("built_up").length) {
+    out.push({
+      id: "built_up", label: s.built_up,
+      items: ev("built_up").filter(([, , v]) => v === "átkelési")
+        .map(([f, t]) => ({ f, t, color: "#8c826e", text: s.built_up })),
     });
   }
   out.push({

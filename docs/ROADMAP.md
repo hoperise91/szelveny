@@ -3,7 +3,7 @@
 
 > **Working name:** **Szelvény** (*chainage*). Its core feature is finding any position on the national road network as "M1 12+300", just as Szelvény does with "DN1 km 27+400".
 > **Alternative:** *Kilométerkő* (kilometre stone).
-> **Domain candidates (check availability):** szelveny.hu, szelvenyterkep.hu, kilometerko.hu, utszelveny.hu.
+> **Domain:** **szelvenykm.hu** (chosen 2026-11-24, like bornakm.ro; szelveny.hu is taken). Data on `data.szelvenykm.hu`, contact `contact@szelvenykm.hu`.
 > **Tagline:** *Magyarország nyílt közúti adatbázisa* / *Hungary's open road database*
 
 **Key difference from Szelvény:** Hungary's official road data (Magyar Közút's National Road Databank, OKA) is published through the **NAP portal** under terms that allow republication (ÁSZF 2024-03-01 §32). So the official network is the *starting point* here, not the gap. Local roads come from OSM.

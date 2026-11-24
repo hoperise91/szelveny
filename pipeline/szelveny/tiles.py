@@ -185,11 +185,16 @@ def export_roads(conn) -> int:
         attrs.setdefault(road_id, {}).setdefault(typ, []).append(
             [float(f), float(t), value, source])
 
+    # [km, type, name, ref, details]: details are the object's other properties (bridge load
+    # limits, rest-area places); km posts carry none and only the right carriageway's.
     objects: dict[int, list] = {}
-    for road_id, km, typ, name, ref in conn.execute("""
-            SELECT road_id, km, type, props->>'name', props->>'ref'
-            FROM szelveny.point_object ORDER BY road_id, km"""):
-        objects.setdefault(road_id, []).append([float(km), typ, name, ref])
+    for road_id, km, typ, name, ref, extra in conn.execute("""
+            SELECT road_id, km, type, props->>'name', props->>'ref',
+                   CASE WHEN type <> 'km_post' THEN nullif(props - 'name' - 'ref' - 'osm_id', '{}'::jsonb) END
+            FROM szelveny.point_object
+            WHERE NOT (type = 'km_post' AND props->>'carriageway' = '2')
+            ORDER BY road_id, km"""):
+        objects.setdefault(road_id, []).append([float(km), typ, name, ref, extra])
 
     geo_counties: dict[int, list[str]] = {}
     for road_id, names in conn.execute("""
@@ -223,7 +228,7 @@ def export_roads(conn) -> int:
             "bbox": [float(v) for v in bbox] if bbox else None,
             "segments": segments.get(road_id, []),
             "attributes": attrs.get(road_id, {}),
-            "objects": objects.get(road_id, []),  # [km, type, name, ref]
+            "objects": objects.get(road_id, []),  # [km, type, name, ref, details]
         }
         short = route.split(" | ")[0] if route else ""
         through = geo_counties.get(road_id, []) if county is None else []

@@ -1,6 +1,6 @@
 [
   {
-    "AllowedOrigins": ["https://szelveny.hu", "https://www.szelveny.hu", "https://szelveny.pages.dev", "https://*.szelveny.pages.dev", "http://localhost:4321"],
+    "AllowedOrigins": ["https://szelvenykm.hu", "https://www.szelvenykm.hu", "https://szelveny.pages.dev", "https://*.szelveny.pages.dev", "http://localhost:4321"],
     "AllowedMethods": ["GET", "HEAD"],
     "AllowedHeaders": ["Range", "If-Match", "If-None-Match"],
     "ExposeHeaders": ["ETag", "Content-Length", "Content-Range", "Accept-Ranges"],

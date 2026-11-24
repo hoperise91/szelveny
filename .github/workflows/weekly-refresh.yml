@@ -107,7 +107,7 @@ jobs:
             published) title="Weekly refresh $day: published" ;;
             held)      title="Weekly refresh $day: held back" ;;
             *)         title="Weekly refresh $day: failed"
-                       { printf '**Failed**: the run stopped before it could finish, so nothing on szelveny.hu changed.\n\n'
+                       { printf '**Failed**: the run stopped before it could finish, so nothing on szelvenykm.hu changed.\n\n'
                          [ -f data/out/refresh/unreachable ] && { cat data/out/refresh/unreachable; echo "Next Monday's run will try again; no action needed unless it keeps happening."; echo; }
                          printf '[Run log](%s)\n' "$RUN_URL"; } > note.md ;;
           esac

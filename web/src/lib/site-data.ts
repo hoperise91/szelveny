@@ -5,7 +5,7 @@ import type { IndexRow } from "./roads";
 
 const REMOTE = (() => {
   const u = (import.meta.env.PUBLIC_DATA_URL ?? "").replace(/\/$/, "");
-  return u.startsWith("http") ? u : "https://data.szelveny.hu";
+  return u.startsWith("http") ? u : "https://data.szelvenykm.hu";
 })();
 
 let cached: Promise<IndexRow[]> | null = null;

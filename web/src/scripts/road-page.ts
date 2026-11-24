@@ -13,7 +13,10 @@ import { liveStrip } from "../lib/strip";
 
 const BASEMAP = "https://tiles.openfreemap.org/styles/positron";
 const esc = (v: unknown) => String(v ?? "").replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
-const ATTR_ORDER = ["surface", "lanes", "maxspeed", "aadt", "width", "bridge", "tunnel"];
+const ATTR_ORDER = ["surface", "width", "lanes", "maxspeed", "aadt", "built_up", "oneway", "truck_restriction",
+  "bridge", "tunnel", "administrator", "eroad"];
+// Objects along the road, in this order; km posts are only counted.
+const OBJECT_ORDER = ["junction", "rest_area", "bridge", "level_crossing", "border", "toll", "ferry"];
 
 export async function initRoadPage(root: HTMLElement) {
   // Precision details are for the maintainer only (?detalii=1 on the map turns them on).
@@ -81,6 +84,8 @@ export async function initRoadPage(root: HTMLElement) {
       <div class="card rp-strip"><div id="rp-strip"></div></div>
       <p class="rp-note">${esc(s.strip_note)}</p>` : ""}
 
+    ${objectsSection(road, s)}
+
     ${Object.keys(road.attributes).length ? `<h2>${esc(s.details_all)}</h2>
       ${ATTR_ORDER.filter((t) => road.attributes[t]?.length).map((t) => {
         const ev = road.attributes[t];
@@ -138,4 +143,40 @@ export async function initRoadPage(root: HTMLElement) {
       new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat(p as LngLatLike).addTo(map);
     });
   });
+}
+
+
+/** One table per object type along the road (km, name, details), nearest km first. */
+function objectsSection(road: Road, s: Strings): string {
+  const S = s as Record<string, string>;
+  const objs = road.objects ?? [];
+  const posts = objs.filter((o) => o[1] === "km_post").length;
+  const detail = (type: string, d: Record<string, unknown> | null): string => {
+    if (!d) return "";
+    if (type === "bridge") {
+      const limits = (d.limits as string[] | undefined) ?? [];
+      return [d.kind, d.capacity ? `${s.capacity}: ${d.capacity}` : "", ...limits].filter(Boolean).join(" · ");
+    }
+    if (type === "rest_area") {
+      const places = [["car", s.places_car], ["truck", s.places_truck], ["bus", s.places_bus]]
+        .filter(([k]) => d[k] != null).map(([k, l]) => `${d[k]} ${l}`);
+      return [d.side, places.length ? `${s.places}: ${places.join(", ")}` : ""].filter(Boolean).join(" · ");
+    }
+    return [d.operator, d.barrier].filter(Boolean).join(" · ");
+  };
+  const tables = OBJECT_ORDER.map((type) => {
+    const rows = objs.filter((o) => o[1] === type);
+    if (!rows.length) return "";
+    return `<details class="attr"><summary>${esc(S[`obj_${type}`] ?? type)} <span class="n">${rows.length}</span></summary>
+      <div class="table-wrap"><table><thead><tr><th class="num">${esc(s.km_short)}</th><th>${esc(s.name)}</th>
+        <th>${esc(s.details)}</th></tr></thead><tbody>
+      ${rows.map(([km, t, name, ref, d]) => `<tr><td class="num">${formatKm(km)}</td>
+        <td>${esc([ref && t === "junction" ? ref : "", name].filter(Boolean).join(" ") || "—")}</td>
+        <td class="small">${esc(detail(t, d))}</td></tr>`).join("")}
+      </tbody></table></div></details>`;
+  }).join("");
+  if (!tables && !posts) return "";
+  return `<h2>${esc(s.along_road)}</h2>
+    ${posts ? `<p class="rp-note" style="margin:0 0 8px">${esc(s.km_posts_count.replace("{n}", posts.toLocaleString()))}</p>` : ""}
+    ${tables}`;
 }
