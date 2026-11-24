@@ -67,6 +67,8 @@ export async function initRoadPage(root: HTMLElement) {
           ${onMap && details ? `<dt>${esc(s.km_quality)}</dt><dd>${(["official", "calibrated", "interpolated", "estimated"] as Quality[])
             .filter((q) => shares[q] > 0.005)
             .map((q) => `<span class="q" data-q="${q}">${Math.round(shares[q] * 100)}% ${esc(S[`q_${q}`])}</span>`).join("<br>")}</dd>` : ""}
+          ${road.road_class ? `<dt>${esc(s.road_class)}</dt><dd>${esc(road.road_class)}</dd>` : ""}
+          ${road.administrator ? `<dt>${esc(s.administrator)}</dt><dd>${esc(road.administrator)}</dd>` : ""}
           ${road.through?.length ? `<dt>${esc(s.through)}</dt><dd>${road.through.map((c) => esc(countyName(c))).join(", ")}</dd>` : ""}
         </dl>
         ${onMap ? `<form class="rp-goto" id="rp-goto"><input inputmode="decimal" aria-label="${esc(s.go_to_km)}"

@@ -3,7 +3,8 @@
 import type { Strings } from "./i18n";
 
 export type Mode = "category" | "surface" | "maxspeed" | "aadt" | "width" | "owner";
-export type ObjectType = "junction" | "level_crossing" | "border" | "toll" | "ferry";
+export type ObjectType = "junction" | "level_crossing" | "border" | "toll" | "ferry"
+  | "km_post" | "bridge" | "rest_area";
 export type DataId = "category" | "owner" | "eroad" | "surface" | "lanes" | "width" | "structures" | "curve"
   | "maxspeed" | "aadt" | `obj_${ObjectType}`;
 
@@ -33,14 +34,18 @@ export const DATA_GROUPS: { label: keyof Strings; items: DataType[] }[] = [
     { id: "obj_border", label: "obj_border", object: "border" },
     { id: "obj_toll", label: "obj_toll", object: "toll" },
     { id: "obj_ferry", label: "obj_ferry", object: "ferry" },
+    { id: "obj_rest_area", label: "obj_rest_area", object: "rest_area" },
+    { id: "obj_bridge", label: "obj_bridge", object: "bridge" },
+    { id: "obj_km_post", label: "obj_km_post", object: "km_post" },
   ] },
 ];
 
 export const OBJECT_COLOR: Record<ObjectType, string> = {
   junction: "#2c9c5a", level_crossing: "#c0392b", border: "#6a3d9a", toll: "#d99a00", ferry: "#1f78b4",
+  rest_area: "#7a5c2e", bridge: "#4a5568", km_post: "#1d1c1a",
 };
 
 export const DATA_TYPES: DataType[] = DATA_GROUPS.flatMap((g) => g.items);
 export const COLOUR_MODES: DataType[] = DATA_TYPES.filter((d) => d.colour);
 export const DEFAULT_DATA: DataId[] = ["category", "owner", "eroad", "surface", "maxspeed",
-  "obj_junction", "obj_border", "obj_toll", "obj_ferry"];
+  "obj_junction", "obj_border", "obj_toll", "obj_ferry", "obj_rest_area"];

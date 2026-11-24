@@ -26,13 +26,19 @@ from szelveny.config import CRS_METRIC, DATA_OUT, PG_DSN, ROOT
 from szelveny.hungary import CATEGORIES, county_code
 
 WEB_DATA = ROOT / "web" / "public" / "data"
-MIN_ZOOM = {"M": 5, "F": 5, "OK": 8, "BK": 10, "local": 11}
-OBJECT_MIN_ZOOM = {"border": 6, "ferry": 6, "junction": 8, "toll": 8, "level_crossing": 11}
+MIN_ZOOM = {"M": 5, "F": 5, "OK": 8, "BK": 10, "ramp": 11, "rest": 11, "cycle": 11, "local": 11}
+OBJECT_MIN_ZOOM = {"border": 6, "ferry": 6, "junction": 8, "toll": 8, "rest_area": 9,
+                   "level_crossing": 11, "bridge": 11, "km_post": 12}
 COORD_DECIMALS = 6          # ~0.1 m
 SIMPLIFY_M = 2              # per-road JSON geometry, in EOV
 
+# OSM surface tags and NAP's pavement types ('hengerelt aszfalt, aszfaltbeton (…)', 'makadám-,
+# zúzottkő-, salak-kötőréteg (…)', 'földút') -> map classes.
 SURFACE_CLASS_SQL = """
-    CASE WHEN value IN ('asphalt', 'concrete', 'concrete:plates', 'concrete:lanes', 'paved',
+    CASE WHEN value ILIKE '%%aszfalt%%' OR value IN ('beton', 'kő, keramit') THEN 'paved'
+         WHEN value ILIKE 'makadám-%%' THEN 'gravel'
+         WHEN value ILIKE '%%földút' THEN 'earth'
+         WHEN value IN ('asphalt', 'concrete', 'concrete:plates', 'concrete:lanes', 'paved',
                         'paving_stones', 'sett', 'cobblestone', 'unhewn_cobblestone', 'chipseal')
               THEN 'paved'
          WHEN value IN ('gravel', 'fine_gravel', 'compacted', 'pebblestone', 'rock') THEN 'gravel'
@@ -47,7 +53,14 @@ WIDTH_M_SQL = """
 
 ROAD_KEY_SQL = "CASE WHEN r.settlement IS NULL THEN r.ref ELSE r.settlement || '-' || r.ref END"
 
-# Geometry of each attribute event: the part of each overlapping segment between its km.
+# Where NAP has a value type on a road, NAP's events are shown and OSM's of that type are not
+# (both stay in the database, each with its source).
+PREFERRED_SQL = """(e.source_id = 'nap' OR NOT EXISTS (
+    SELECT 1 FROM szelveny.attribute_event n
+    WHERE n.road_id = e.road_id AND n.type = e.type AND n.source_id = 'nap'))"""
+
+# Geometry of each attribute event: the part of each overlapping segment between its km, on the
+# event's own carriageway (NAP pkod) when it has one.
 EVENT_GEOM_SQL = """
     SELECT e.road_id, e.type, e.value, e.km_from, e.km_to, r.category,
            ST_LineSubstring(s.geom,
@@ -57,7 +70,8 @@ EVENT_GEOM_SQL = """
     JOIN szelveny.road r USING (road_id)
     JOIN szelveny.road_segment s ON s.road_id = e.road_id
          AND s.km_to > e.km_from AND s.km_from < e.km_to AND s.km_to > s.km_from
-    WHERE e.type = %s"""
+         AND s.carriageway = coalesce(e.carriageway, s.carriageway)
+    WHERE e.type = %s AND """ + PREFERRED_SQL
 
 
 def _geojsonseq(conn, path: Path, sql: str, params=()) -> int:
@@ -160,9 +174,12 @@ def export_roads(conn) -> int:
         segments.setdefault(road_id, []).append([float(f), float(t), q, coords])
 
     attrs: dict[int, dict] = {}
-    for road_id, typ, f, t, value, source in conn.execute("""
-            SELECT road_id, type, km_from, km_to, value, source_id
-            FROM szelveny.attribute_event ORDER BY road_id, type, km_from"""):
+    # The road page's strip shows one value per km: undivided and right-carriageway values.
+    for road_id, typ, f, t, value, source in conn.execute(f"""
+            SELECT e.road_id, e.type, e.km_from, e.km_to, e.value, e.source_id
+            FROM szelveny.attribute_event e
+            WHERE coalesce(e.carriageway, 0) IN (0, 1) AND {PREFERRED_SQL}
+            ORDER BY e.road_id, e.type, e.km_from"""):
         attrs.setdefault(road_id, {}).setdefault(typ, []).append(
             [float(f), float(t), value, source])
 
@@ -181,9 +198,10 @@ def export_roads(conn) -> int:
         geo_counties[road_id] = sorted(county_code(n) for n in names)
 
     index = []
-    for (road_id, key, ref, county, category, route, km_from, km_to, length,
+    for (road_id, key, ref, county, category, road_class, administrator, route, km_from, km_to, length,
          status, path_km, orientation, n_ctrl, n_ms, controls_km, bbox) in conn.execute(f"""
-            SELECT r.road_id, {ROAD_KEY_SQL}, r.ref, r.county, r.category, r.route_desc,
+            SELECT r.road_id, {ROAD_KEY_SQL}, r.ref, r.county, r.category, r.road_class,
+                   r.administrator, r.route_desc,
                    r.km_from_official, r.km_to_official, r.length_official,
                    l.status, l.path_km, l.orientation, l.n_junction, l.n_milestone, l.controls_km,
                    (SELECT ARRAY[round(ST_XMin(b)::numeric, 4), round(ST_YMin(b)::numeric, 4),
@@ -195,6 +213,7 @@ def export_roads(conn) -> int:
         num = (lambda v: None if v is None else float(v))
         doc = {
             "key": key, "ref": ref, "county": county, "category": category, "route": route,
+            "road_class": road_class, "administrator": administrator,
             "km_from": num(km_from), "km_to": num(km_to), "length_official": num(length),
             "lrs": {"status": status, "path_km": num(path_km), "orientation": orientation,
                     "control_points": (n_ctrl or 0) + (n_ms or 0),

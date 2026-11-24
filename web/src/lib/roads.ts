@@ -18,6 +18,8 @@ export interface Road {
   km_from: number | null;
   km_to: number | null;
   length_official: number | null;
+  road_class?: string | null;      // NAP's category name: 'autópálya', 'II. rendű főút', …
+  administrator?: string | null;   // kezelő (NAP)
   lrs: { status: string | null; path_km: number | null; control_points: number; controls?: number[] };
   bbox: [number, number, number, number] | null;
   segments: Segment[];
@@ -35,12 +37,13 @@ export interface Source {
   attribution: string | null; retrieved: string; version: string;
 }
 
-// M gyorsforgalmi út, F főút, OK összekötő út, BK bekötő út, local: roads without a national
-// number (pipeline/szelveny/hungary.py).
+// M gyorsforgalmi út, F főút, OK összekötő út, BK bekötő út, ramp csomóponti ág, rest pihenőút,
+// cycle kerékpárút (NAP kutka); local: roads without a national number.
 export const CATEGORY_COLOR: Record<string, string> = {
-  M: "#1f5aa6", F: "#c8102e", OK: "#d9822b", BK: "#7a8f2e", local: "#7c7c7c",
+  M: "#1f5aa6", F: "#c8102e", OK: "#d9822b", BK: "#7a8f2e",
+  ramp: "#6d8fc7", rest: "#9aa5b1", cycle: "#2a9d8f", local: "#7c7c7c",
 };
-export const CATEGORY_ORDER = ["M", "F", "OK", "BK", "local"];
+export const CATEGORY_ORDER = ["M", "F", "OK", "BK", "ramp", "rest", "cycle", "local"];
 
 export const QUALITY_COLOR: Record<Quality, string> = {
   official: "#00563b", calibrated: "#1a9850", interpolated: "#e6a100", estimated: "#d73027",
@@ -55,7 +58,12 @@ const PAVED = new Set(["asphalt", "concrete", "concrete:plates", "concrete:lanes
 const GRAVEL = new Set(["gravel", "fine_gravel", "compacted", "pebblestone", "rock"]);
 const EARTH = new Set(["dirt", "ground", "earth", "grass", "mud", "sand", "soil"]);
 
+/** OSM surface tag or NAP pavement type -> map class (as tiles.py SURFACE_CLASS_SQL). */
 export function surfaceClass(value: string): string {
+  const v = value.toLowerCase();
+  if (v.includes("aszfalt") || v === "beton" || v === "kő, keramit") return "paved";
+  if (v.startsWith("makadám-")) return "gravel";
+  if (v.endsWith("földút")) return "earth";
   if (PAVED.has(value)) return "paved";
   if (GRAVEL.has(value)) return "gravel";
   if (EARTH.has(value)) return "earth";

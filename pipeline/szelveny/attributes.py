@@ -4,6 +4,9 @@ Every attribute value is placed on a road's km range and keeps its source, date 
   - OSM, per way on the road: surface, lanes, maxspeed, width, bridge, tunnel (values as tagged)
   - European routes (OSM route relations network=e-road): eroad = 'E75' on the roads they follow
   - horizontal curves from Szelvény's own (OSM-derived) centrelines: curve (see curves.py)
+  - NAP packages on NAP roads (nap_events): lanes, maxspeed, surface, width, aadt, built_up,
+    oneway, truck_restriction, bridge. These carry the road number, carriageway and szelvény
+    themselves, so they need no placement: one event per NAP record. Values as published.
 
 A way or section is placed by measuring its two ends on the road's calibrated segments (as
 szelveny.measure() does, but in memory), kept only if its midpoint lies on the road (within
@@ -73,8 +76,10 @@ class RoadLine:
 def load_roads(conn) -> tuple[dict[int, RoadLine], dict[tuple, int]]:
     roads: dict[int, RoadLine] = defaultdict(RoadLine)
     for road_id, f, t, g in conn.execute(f"""
-            SELECT road_id, km_from, km_to, ST_AsBinary(ST_Transform(geom, {CRS_METRIC}))
-            FROM szelveny.road_segment ORDER BY road_id, sequence"""):
+            SELECT s.road_id, s.km_from, s.km_to, ST_AsBinary(ST_Transform(s.geom, {CRS_METRIC}))
+            FROM szelveny.road_segment s JOIN szelveny.road r USING (road_id)
+            WHERE r.category <> 'local'   -- local roads have no km to place values on
+            ORDER BY s.road_id, s.sequence"""):
         roads[road_id].segs.append((wkb.loads(bytes(g)), float(f), float(t)))
     by_key = {(ref, county): rid for rid, ref, county in conn.execute(
         "SELECT road_id, ref, county FROM szelveny.road") if rid in roads}
@@ -163,10 +168,58 @@ def eroad_events(conn, manifest: dict, roads, by_key) -> None:
     conn.execute("DROP TABLE ev_in")
 
 
+KM = "(split_part({c}, '+', 1)::numeric + trim(split_part({c}, '+', 2))::numeric / 1000)"
+# attribute_event.type -> (NAP table, value expression). Speed limits: the posted value, with
+# its direction when it applies to one side only and its supplementary plate.
+NAP_EVENTS = {
+    "lanes": ("raw.nap_savok", "savossz::text"),
+    "maxspeed": ("raw.nap_sebesseg",
+                 ("sebkorl::text || CASE WHEN sebkir IS NOT NULL AND sebkir <> 'teljes keresztmetszetre'"
+                 " THEN ' (' || sebkir || ')' ELSE '' END"
+                 " || CASE WHEN nullif(trim(sebkieg), '') IS NOT NULL THEN ' · ' || sebkieg ELSE '' END")),
+    "surface": ("raw.nap_burkolat", "nullif(trim(rbtip), '')"),
+    "width": ("raw.nap_burkolat", "rbtsz::text"),
+    "aadt": ("raw.nap_forgalom", "oj::text"),          # all vehicles per day (anf is in PCU)
+    "built_up": ("raw.nap_lakott_terulet", "szakjel"),
+    "oneway": ("raw.nap_egyiranyu", "irany"),
+    "truck_restriction": ("raw.nap_teher_korlatozas",
+                          ("concat_ws(' ', sulyk, CASE WHEN sulykorl IS NOT NULL THEN sulykorl::text || ' t' END)"
+                          " || CASE WHEN sulyk2 IS NOT NULL THEN '; ' || concat_ws(' ', sulyk2,"
+                          " CASE WHEN sulykorl2 IS NOT NULL THEN sulykorl2::text || ' t' END) ELSE '' END")),
+    "bridge": ("raw.nap_hidak", "coalesce(nullif(trim(hnev), ''), hnem, 'híd')"),
+}
+
+
+def nap_events(conn, manifest: dict, roads=None, by_key=None) -> None:
+    """One event per NAP record, on the NAP road with that number (no placement needed)."""
+    dates = {p["table"]: p["download"]["retrieved_at"][:10]
+             for p in manifest["packages"] if p.get("download")}
+    types = list(NAP_EVENTS)
+    conn.execute("DELETE FROM szelveny.attribute_event WHERE source_id = 'nap' AND type = ANY(%s)",
+                 (types,))
+    for typ, (table, value) in NAP_EVENTS.items():
+        if table not in dates:
+            print(f"attributes: nap: {table} not downloaded, {typ} skipped", file=sys.stderr)
+            continue
+        f, t = KM.format(c="x.kszelv"), KM.format(c="x.vszelv")
+        n = conn.execute(f"""
+            INSERT INTO szelveny.attribute_event (road_id, km_from, km_to, type, value, carriageway,
+                                                  source_id, source_date, licence)
+            SELECT r.road_id, round(least({f}, {t}), 3), round(greatest({f}, {t}), 3), %(type)s, v,
+                   x.pkod::smallint, 'nap', %(date)s, %(licence)s
+            FROM {table} x
+            JOIN szelveny.road r ON r.ref = x.kszam AND r.source_id = 'nap'
+            CROSS JOIN LATERAL (SELECT {value} AS v) val
+            WHERE v IS NOT NULL AND x.kszelv LIKE '%%+%%' AND x.vszelv LIKE '%%+%%'
+        """, {"type": typ, "date": dates[table], "licence": manifest["licence"]}).rowcount
+        print(f"attributes: nap: {typ}: {n:,} events")
+
+
 def main() -> int:
     with psycopg.connect(PG_DSN) as conn:
         roads, by_key = load_roads(conn)
-        for source_id, fn in (("osm", osm_events), ("osm", eroad_events), ("osm", curve_events)):
+        for source_id, fn in (("osm", osm_events), ("osm", eroad_events), ("osm", curve_events),
+                              ("nap", nap_events)):
             manifest = sources.read_manifest(source_id)
             if not manifest:
                 print(f"attributes: {source_id}: no download, skipped", file=sys.stderr)

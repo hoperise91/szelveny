@@ -67,7 +67,7 @@ const HU_BOUNDS: [[number, number], [number, number]] = [[16.1, 45.7], [22.95, 4
 
 // Administrator by road category: national roads -> the state (Magyar Közút, or a motorway
 // concession company on some M roads), local roads -> the municipality (önkormányzat).
-// NAP's "Közút neve, kategóriája és kezelője" package gives the actual administrator (Phase 3).
+// NAP roads carry their actual administrator (road.administrator); this is the fallback.
 export const OWNER_OF: Record<string, string> = { M: "state", F: "state", OK: "state", BK: "state", local: "local" };
 export const OWNER_COLOR: Record<string, string> = { state: "#7b2cbf", local: "#2a9d8f" };
 // Carriageway width classes (m), NVDB-style; estimated width = lanes x a standard lane width.
@@ -869,7 +869,8 @@ export function initMap(root: HTMLElement) {
         ${onMap && details ? `<dt>${esc(s.km_quality)}</dt><dd>${Math.round((shares.official || shares.calibrated) * 100)}% ${esc(qual(shares.official ? "official" : "calibrated"))}
           <div class="qbar">${(["official", "calibrated", "interpolated", "estimated"] as Quality[]).map((q) =>
             `<span style="width:${shares[q] * 100}%;background:${QUALITY_COLOR[q]}"></span>`).join("")}</div></dd>` : ""}
-        <dt>${esc(s.administrator)}</dt><dd>${esc((s as Record<string, string>)[`owner_${OWNER_OF[road.category] ?? "local"}`])}</dd>
+        ${road.road_class ? `<dt>${esc(s.road_class)}</dt><dd>${esc(road.road_class)}</dd>` : ""}
+        <dt>${esc(s.administrator)}</dt><dd>${esc(road.administrator ?? (s as Record<string, string>)[`owner_${OWNER_OF[road.category] ?? "local"}`])}</dd>
         ${through.length ? `<dt>${esc(s.through)}</dt><dd>${through.map((c) => esc(countyName(c))).join(", ")}</dd>` : ""}
         ${aadt.length ? `<dt>${esc(s.aadt)}</dt><dd>${Math.min(...aadt).toLocaleString()} – ${Math.max(...aadt).toLocaleString()} ${esc(s.vehicles_day)}</dd>` : ""}
       </dl>
@@ -944,7 +945,7 @@ export function initMap(root: HTMLElement) {
           break;
         }
         case "owner":
-          val = T[`owner_${OWNER_OF[road.category] ?? "local"}`];
+          val = ev("administrator")?.[2] ?? road.administrator ?? T[`owner_${OWNER_OF[road.category] ?? "local"}`];
           src = roadSrc; break;
         case "surface": take(ev("surface"), (v) => `${T[`s_${surfaceClass(v)}`] ?? v} (${v})`); break;
         case "lanes": take(ev("lanes"), (v) => v); break;

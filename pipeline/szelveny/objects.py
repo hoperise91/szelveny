@@ -11,6 +11,11 @@ OSM nodes already imported into raw.osm_road_points, placed on the nearest Szelv
 A node is kept when a road's centreline passes within ON_ROAD_M; when several roads do (a level
 crossing at a junction), the most important category wins. Every object keeps source, date and
 licence. Run after `make lrs`; re-running replaces the OSM objects.
+
+NAP packages give point objects on NAP roads with their own road number and szelvény (nap_objects):
+  - km_post    Szelvényjelek (the km stones' surveyed positions)
+  - bridge     Hídhasználati feltételek, at the bridge's middle, with its load limits
+  - rest_area  Pihenőparkolók, at the middle, with side and parking places
 """
 
 import json
@@ -58,6 +63,7 @@ def main() -> int:
                                AND ST_DWithin(ST_Transform(s.geom, {CRS_METRIC}),
                                               ST_Transform(p.geom, {CRS_METRIC}), {ON_ROAD_M}))
                 FROM raw.osm_road_points p WHERE p.kind = ANY(%s)""", (list(KINDS),)):
+            cands = [c for c in cands if c in roads]  # local roads have no km to place on
             if not cands:
                 skipped += 1
                 continue
@@ -84,6 +90,7 @@ def main() -> int:
                 CROSS JOIN LATERAL (VALUES (0, ST_StartPoint(f.geom)), (1, ST_EndPoint(f.geom))) e(n, p)
                 WHERE {CAR_FERRY_SQL}
                 """) if has_ferries else []):
+            cands = [c for c in cands if c in roads]  # local roads have no km to place on
             if not cands:
                 continue
             pt = wkb.loads(bytes(g))
@@ -116,7 +123,52 @@ def main() -> int:
     for typ, n, nroads in summary:
         print(f"objects: {typ:<15}{n:>7,} on {nroads:,} roads")
     print(f"objects: {skipped:,} nodes not within {ON_ROAD_M} m of a Szelvény road (left out)")
+    nap_objects()
     return 0
+
+
+KM = "(split_part({c}, '+', 1)::numeric + trim(split_part({c}, '+', 2))::numeric / 1000)"
+# Middle of a section; a few NAP bridges are multi-part or points: the point nearest the centre.
+MID = ("CASE WHEN ST_GeometryType(ST_LineMerge(x.geom)) = 'ST_LineString'"
+       " THEN ST_LineInterpolatePoint(ST_LineMerge(x.geom), 0.5)"
+       " ELSE ST_ClosestPoint(x.geom, ST_Centroid(x.geom)) END")
+# point_object.type -> (NAP table, km expression, point geometry, props)
+NAP_OBJECTS = {
+    "km_post": ("raw.nap_szelvenyjelek", "x.kmjel::numeric", "ST_GeometryN(x.geom, 1)",
+                "jsonb_build_object('ref', x.kmjel::text, 'carriageway', x.pkod)"),
+    "bridge": ("raw.nap_hidak", f"({KM.format(c='x.kszelv')} + {KM.format(c='x.vszelv')}) / 2", MID,
+               ("jsonb_strip_nulls(jsonb_build_object('name', nullif(trim(x.hnev), ''), 'ref', x.hszam::text,"
+               " 'kind', x.hnem, 'position', x.hhely, 'capacity', x.huzemtb,"
+               " 'limits', (SELECT jsonb_agg(l) FROM (VALUES (x.hkorlt1, x.hkorle1), (x.hkorlt2, x.hkorle2),"
+               " (x.hkorlt3, x.hkorle3), (x.hkorlt4, x.hkorle4), (x.hkorlt5, x.hkorle5), (x.hkorlt6, x.hkorle6))"
+               " AS v(t, e), LATERAL (SELECT concat_ws(': ', v.t, v.e::text) AS l) z"
+               " WHERE v.t IS NOT NULL AND v.t <> 'Nincs korlátozás a hídon')))")),
+    "rest_area": ("raw.nap_pihenoparkolok", f"({KM.format(c='x.kszelv')} + {KM.format(c='x.vszelv')}) / 2", MID,
+                  ("jsonb_strip_nulls(jsonb_build_object('name', x.ppnev, 'side', x.ppold,"
+                  " 'bus', x.ppa, 'truck', x.ppk, 'car', x.ppszgk))")),
+}
+
+
+def nap_objects() -> None:
+    manifest = sources.read_manifest("nap")
+    if not manifest:
+        print("objects: no NAP manifest, NAP objects skipped", file=sys.stderr)
+        return
+    dates = {p["table"]: p["download"]["retrieved_at"][:10]
+             for p in manifest["packages"] if p.get("download")}
+    with psycopg.connect(PG_DSN) as conn:
+        conn.execute("DELETE FROM szelveny.point_object WHERE source_id = 'nap'")
+        for typ, (table, km, geom, props) in NAP_OBJECTS.items():
+            if table not in dates:
+                continue
+            n = conn.execute(f"""
+                INSERT INTO szelveny.point_object (road_id, km, type, props, geom, source_id, source_date, licence)
+                SELECT r.road_id, round({km}, 3), %(type)s, {props}, {geom}, 'nap', %(date)s, %(licence)s
+                FROM {table} x JOIN szelveny.road r ON r.ref = x.kszam AND r.source_id = 'nap'
+                WHERE x.geom IS NOT NULL
+            """, {"type": typ, "date": dates[table], "licence": manifest["licence"]}).rowcount
+            print(f"objects: nap {typ:<11}{n:>7,}")
+        conn.commit()
 
 
 if __name__ == "__main__":
