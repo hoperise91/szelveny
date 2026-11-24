@@ -66,7 +66,7 @@ const hu = lang === "hu";
     </ul>
 
     <h2>{hu ? "Kapcsolat" : "Contact"}</h2>
-    <p>{hu ? "A Szelvény " : "Szelvény is a personal project by "}{AUTHOR.name}{hu ? " személyes projektje" : ""}{" "}(<a href={AUTHOR.linkedin} rel="noopener">LinkedIn</a>).</p>
+    <p>{hu ? "A Szelvény " : "Szelvény is a personal project by "}{AUTHOR.name[lang]}{hu ? " személyes projektje" : ""}{" "}(<a href={AUTHOR.linkedin} rel="noopener">LinkedIn</a>).</p>
     <p>{hu
       ? "Hibák, hiányzó utak, javítások vagy adateltávolítási kérések: "
       : "Mistakes, missing roads, corrections or requests to take data down: "}<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>

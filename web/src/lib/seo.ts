@@ -50,7 +50,7 @@ export const organization = {
   url: abs("/"),
   logo: abs("/apple-touch-icon.png"),
   email: CONTACT_EMAIL,
-  founder: { "@type": "Person", name: AUTHOR.name, sameAs: [AUTHOR.linkedin] },
+  founder: { "@type": "Person", name: AUTHOR.name.en, alternateName: AUTHOR.name.hu, sameAs: [AUTHOR.linkedin] },
 };
 
 export function website(lang: Lang) {

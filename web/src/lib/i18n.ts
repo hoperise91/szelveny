@@ -9,8 +9,12 @@ export type Page = keyof (typeof routes)["hu"];
 
 /** Public contact (Cloudflare Email Routing → the owner's inbox). */
 export const CONTACT_EMAIL = "contact@szelveny.hu";
-/** The person behind the project (About → Contact, JSON-LD founder). Hungarian name order. */
-export const AUTHOR = { name: "Jakab Ádám", linkedin: "https://www.linkedin.com/in/jakabadam/" };
+/** The person behind the project (About → Contact, JSON-LD founder): Hungarian name order in
+ * Hungarian, given name first in English. */
+export const AUTHOR = {
+  name: { hu: "Jakab Ádám", en: "Ádám Jakab" } as Record<"hu" | "en", string>,
+  linkedin: "https://www.linkedin.com/in/jakabadam/",
+};
 
 const hu = {
   tagline: "Magyarország nyílt közúti adatbázisa",
