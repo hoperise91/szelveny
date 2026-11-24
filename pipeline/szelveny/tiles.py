@@ -53,16 +53,18 @@ WIDTH_M_SQL = """
 
 ROAD_KEY_SQL = "CASE WHEN r.settlement IS NULL THEN r.ref ELSE r.settlement || '-' || r.ref END"
 
-# Where NAP has a value type on a road, NAP's events are shown and OSM's of that type are not
-# (both stay in the database, each with its source).
-PREFERRED_SQL = """(e.source_id = 'nap' OR NOT EXISTS (
+# Where NAP has a value type on a road, NAP's events (and the general speed limits derived from
+# NAP, 'kresz') are shown and OSM's of that type are not (all stay in the database, each with
+# its source).
+OFFICIAL = "('nap', 'kresz')"
+PREFERRED_SQL = f"""(e.source_id IN {OFFICIAL} OR NOT EXISTS (
     SELECT 1 FROM szelveny.attribute_event n
-    WHERE n.road_id = e.road_id AND n.type = e.type AND n.source_id = 'nap'))"""
+    WHERE n.road_id = e.road_id AND n.type = e.type AND n.source_id IN {OFFICIAL}))"""
 
 # Geometry of each attribute event: the part of each overlapping segment between its km, on the
 # event's own carriageway (NAP pkod) when it has one.
 EVENT_GEOM_SQL = """
-    SELECT e.road_id, e.type, e.value, e.km_from, e.km_to, r.category,
+    SELECT e.road_id, e.type, e.value, e.source_id, e.km_from, e.km_to, r.category,
            ST_LineSubstring(s.geom,
                ((greatest(e.km_from, s.km_from) - s.km_from) / (s.km_to - s.km_from))::float8,
                ((least(e.km_to, s.km_to) - s.km_from) / (s.km_to - s.km_from))::float8) AS geom
@@ -104,7 +106,7 @@ def export_tiles(conn, tmp: Path) -> None:
             SELECT json_build_object(
                 'type', 'Feature',
                 'tippecanoe', json_build_object('minzoom', {minzoom.replace('r.category', 'x.category')}),
-                'properties', json_build_object('v', {value}, 't', x.category),
+                'properties', json_build_object('v', {value}, 't', x.category, 's', x.source_id),
                 'geometry', ST_AsGeoJSON(x.geom, {COORD_DECIMALS})::json)
             FROM ({EVENT_GEOM_SQL}) x
             WHERE NOT ST_IsEmpty(x.geom) AND {value} IS NOT NULL""", (typ,))

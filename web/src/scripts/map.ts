@@ -200,7 +200,7 @@ export function initMap(root: HTMLElement) {
     const tf = typeFilter();
     const only = (cats: string[]): ExpressionSpecification => ["all", tf, ["in", ["get", "t"], ["literal", cats]]];
     return ["step", ["zoom"], only(["M"]), 6, only(["M", "F"]), 8,
-      only(["M", "F", "OK"]), 11, tf] as unknown as ExpressionSpecification;
+      only(["M", "F", "OK"]), 11, ["all", tf, ["!=", ["get", "t"], "local"]]] as unknown as ExpressionSpecification;
   };
   let showLabels = stored("szelveny.labels") !== "0";
   let showConstruction = stored("szelveny.construction") !== "0";
@@ -253,8 +253,10 @@ export function initMap(root: HTMLElement) {
     map.addLayer({ id: "surface", type: "line", source: "szelveny", "source-layer": "surface", layout: { ...line, visibility: "none" },
       paint: { "line-width": width(1.15), "line-color": [
         "match", ["get", "v"], ...Object.entries(SURFACE_COLOR).flat(), "#a3a3a3"] as unknown as ExpressionSpecification } }, before);
+    // General limits (KRESZ, no sign) fainter than posted ones.
     map.addLayer({ id: "maxspeed", type: "line", source: "szelveny", "source-layer": "maxspeed", layout: { ...line, visibility: "none" },
-      paint: { "line-width": width(1.15), "line-color": [
+      paint: { "line-width": width(1.15), "line-opacity": ["case", ["==", ["get", "s"], "kresz"], 0.45, 1],
+        "line-color": [
         "case", [">", ["to-number", ["get", "v"], 0], 0],
         ["step", ["to-number", ["get", "v"], 0], "#b2182b", 31, "#ef8a62", 51, "#f4c95d", 71, "#7fbf7b", 91, "#2c9c5a", 111, "#00563b"],
         "#a3a3a3"] } }, before);
@@ -289,6 +291,16 @@ export function initMap(root: HTMLElement) {
         "icon-text-fit": "both", "icon-text-fit-padding": [1, 4, 1, 4], "text-padding": 6,
       },
       paint: { "text-color": "#ffffff" } });
+    // Local roads: their name along the line, like a street map (no shield, not clickable).
+    map.addLayer({ id: "local-labels", type: "symbol", source: "szelveny", "source-layer": "roads",
+      minzoom: 14, filter: ["==", ["get", "t"], "local"],
+      layout: {
+        visibility: showLabels && visibleCats.has("local") ? "visible" : "none",
+        "symbol-placement": "line", "symbol-spacing": 250, "text-field": ["get", "r"],
+        "text-font": ["Noto Sans Regular"], "text-size": 11.5, "text-max-angle": 30,
+      },
+      paint: { "text-color": dark ? "#d8d4ca" : "#5b574f", "text-halo-color": dark ? "#171614" : "#ffffff",
+        "text-halo-width": 1.4 } });
     // Ferry crossings: dashed lines over water, shown with the ferry terminals.
     if (!map.getLayer("ferries")) map.addLayer({ id: "ferries", type: "line", source: "szelveny", "source-layer": "ferries",
       layout: { "line-join": "round", visibility: shownData.has("obj_ferry") ? "visible" : "none" },
@@ -357,6 +369,7 @@ export function initMap(root: HTMLElement) {
     let best: Snap | null = null;
     const rank = (f: maplibregl.MapGeoJSONFeature) => CATEGORY_ORDER.indexOf(f.properties.t);
     for (const f of map.queryRenderedFeatures(around(p, r), { layers: ["roads"] })) {
+      if (f.properties.t === "local") continue; // local roads: a name on the map, nothing to open
       const g = f.geometry;
       const lines = g.type === "LineString" ? [g.coordinates] : g.type === "MultiLineString" ? g.coordinates : [];
       for (const line of lines) {
@@ -440,7 +453,13 @@ export function initMap(root: HTMLElement) {
     const at = (layer: string) => map.getLayer(layer)
       ? map.queryRenderedFeatures(box, { layers: [layer] })[0]?.properties.v : undefined;
     if (mode === "surface") { const v = at("surface"); return v != null ? T[`s_${v}`] ?? String(v) : null; }
-    if (mode === "maxspeed") { const v = at("maxspeed"); return v == null ? null : /^\d+$/.test(String(v)) ? `${v} km/h` : String(v); }
+    if (mode === "maxspeed") {
+      const f = map.getLayer("maxspeed") ? map.queryRenderedFeatures(box, { layers: ["maxspeed"] })[0] : undefined;
+      const v = f?.properties.v;
+      if (v == null) return null;
+      const txt = /^\d+$/.test(String(v)) ? `${v} km/h` : String(v);
+      return f!.properties.s === "kresz" ? `${txt} (${s.general_limit})` : txt;
+    }
     if (mode === "aadt") { const v = at("aadt"); return v != null ? `${num(Number(v), 0)} ${s.vehicles_day}` : null; }
     if (mode === "width") {
       const w = at("width");
@@ -542,6 +561,7 @@ export function initMap(root: HTMLElement) {
       showLabels = box.checked;
       store("szelveny.labels", showLabels ? "1" : "0");
       if (map.getLayer("road-labels")) map.setLayoutProperty("road-labels", "visibility", showLabels ? "visible" : "none");
+      applyLocalLabels();
       return;
     }
     if (!box.dataset.cat) return;
@@ -584,11 +604,16 @@ export function initMap(root: HTMLElement) {
   loading(true);
 
   function applyRoadTypes() {
-    store("szelveny.cats.v2", JSON.stringify([...visibleCats]));
+    store("szelveny.cats", JSON.stringify([...visibleCats]));
     if (!map.getLayer("roads")) return;
     for (const id of ROAD_LAYERS) map.setFilter(id, typeFilter());
     map.setFilter("road-labels", labelFilter());
+    applyLocalLabels();
     applyMode();
+  }
+  function applyLocalLabels() {
+    if (map.getLayer("local-labels")) map.setLayoutProperty("local-labels", "visibility",
+      showLabels && visibleCats.has("local") ? "visible" : "none");
   }
 
   // ---- layer modes & legend -----------------------------------------------------------
@@ -639,7 +664,8 @@ export function initMap(root: HTMLElement) {
       + (showConstruction ? `<div class="row"><span class="sw sw-dash"></span>${esc(s.under_construction)}</div>` : "");
     if (mode === "surface") html = Object.entries(SURFACE_COLOR).map(([k, c]) => row(c, T[`s_${k}`])).join("");
     if (mode === "maxspeed") html = [["#b2182b", "≤ 30"], ["#ef8a62", "50"], ["#f4c95d", "70"], ["#7fbf7b", "90"], ["#2c9c5a", "100–110"], ["#00563b", "130"]]
-      .map(([c, l]) => row(c, `${l} km/h`)).join("");
+      .map(([c, l]) => row(c, `${l} km/h`)).join("")
+      + `<div class="small muted" style="max-width:200px;margin-top:4px">${esc(s.maxspeed_note)}</div>`;
     if (mode === "aadt") html = [["#cbc9e2", "< 10 000"], ["#9e9ac8", "10–20 000"], ["#6a51a3", "20–40 000"], ["#3f007d", "> 40 000"]]
       .map(([c, l], i) => row(c, l, 3 + i * 2)).join("") + `<div class="small muted" style="max-width:190px;margin-top:4px">${esc(s.aadt_note)}</div>`;
     if (mode === "owner") html = Object.entries(OWNER_COLOR).map(([k, c]) => row(c, T[`owner_${k}`])).join("")
@@ -915,7 +941,7 @@ export function initMap(root: HTMLElement) {
   function srcText(id: string): string {
     const v = sourceVersion[id];
     const date = v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? (lang === "hu" ? v.replace(/-/g, ". ") + "." : v) : v;
-    const name = id === "osm" ? "OpenStreetMap" : id === "nap" ? "NAP" : id;
+    const name = id === "osm" ? "OpenStreetMap" : id === "nap" ? "NAP" : id === "kresz" ? "KRESZ 26. § (NAP)" : id;
     return `${name}${date ? ` · ${date}` : ""}`;
   }
 
@@ -973,7 +999,11 @@ export function initMap(root: HTMLElement) {
           } else if (road.attributes.curve) { val = s.curve_straight; src = "osm"; }
           break;
         }
-        case "maxspeed": take(ev("maxspeed"), (v) => (/^\d+$/.test(v) ? `${v} km/h` : v)); break;
+        case "maxspeed": {
+          const e = ev("maxspeed");
+          take(e, (v) => (/^\d+$/.test(v) ? `${v} km/h` : v) + (e?.[3] === "kresz" ? ` (${s.general_limit})` : ""));
+          break;
+        }
         case "aadt": take(ev("aadt"), (v) => `${Number(v).toLocaleString(locale)} ${s.vehicles_day}`); break;
       }
       if (d.object) continue; // listed under "Nearby" below

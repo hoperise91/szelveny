@@ -41,7 +41,9 @@ export function bands(road: Road, s: Strings): Band[] {
   });
   out.push({
     id: "maxspeed", label: s.maxspeed,
-    items: ev("maxspeed").map(([f, t, v]) => ({ f, t, color: speedColor(v), text: `${v} km/h` })),
+    items: ev("maxspeed").map(([f, t, v, src]) => ({
+      f, t, color: speedColor(v), text: `${v} km/h${src === "kresz" ? ` (${s.general_limit})` : ""}`,
+    })),
   });
   if (ev("aadt").length) {
     out.push({

@@ -7,6 +7,8 @@ Every attribute value is placed on a road's km range and keeps its source, date 
   - NAP packages on NAP roads (nap_events): lanes, maxspeed, surface, width, aadt, built_up,
     oneway, truck_restriction, bridge. These carry the road number, carriageway and szelvény
     themselves, so they need no placement: one event per NAP record. Values as published.
+  - general speed limits (default_speed_events, source 'kresz'): NAP lists only posted limits;
+    elsewhere KRESZ §26 applies, derived from NAP's built-up sections and category.
 
 A way or section is placed by measuring its two ends on the road's calibrated segments (as
 szelveny.measure() does, but in memory), kept only if its midpoint lies on the road (within
@@ -215,11 +217,68 @@ def nap_events(conn, manifest: dict, roads=None, by_key=None) -> None:
         print(f"attributes: nap: {typ}: {n:,} events")
 
 
+# KRESZ (1/1975. KPM-BM) §26 general limits for cars where no sign says otherwise, by NAP kutka
+# and built-up section. Ramps (8, 9) and rest-area roads (P) get none: their limit is signed.
+KRESZ_SOURCE = {
+    "source_id": "kresz",
+    "name": "Általános sebességhatárok (KRESZ 26. §) a NAP útkategóriái és lakott területi szakaszai alapján",
+    "url": None,
+    "licence": "derived by Szelvény: KRESZ (1/1975. KPM-BM együttes rendelet, public law) "
+               "applied to NAP data (ÁSZF 2024-03-01 §32)",
+    "attribution": "Szelvény, a NAP adataiból (Forrás: Magyar Közút Nonprofit Zrt. – NAP)",
+}
+DEFAULT_SPEED_SQL = """
+    CASE x.kutka WHEN '1' THEN 130 WHEN '2' THEN 110
+         ELSE CASE x.szakjel WHEN 'átkelési' THEN 50 WHEN 'külsőségi' THEN 90 END END"""
+
+
+def default_speed_events(conn, manifest: dict, roads=None, by_key=None) -> None:
+    """The general limit on every NAP km without a posted limit (on the same carriageway)."""
+    pkg = next((p for p in manifest["packages"] if p["table"] == "raw.nap_lakott_terulet"), None)
+    if not pkg or not pkg.get("download"):
+        print("attributes: kresz: no built-up sections from NAP, skipped", file=sys.stderr)
+        return
+    date = pkg["download"]["retrieved_at"][:10]
+    conn.execute("""
+        INSERT INTO szelveny.source (source_id, name, url, licence, attribution, retrieved_at, notes)
+        VALUES (%(source_id)s, %(name)s, %(url)s, %(licence)s, %(attribution)s, %(date)s::timestamptz,
+                %(notes)s)
+        ON CONFLICT (source_id) DO UPDATE SET name = EXCLUDED.name, licence = EXCLUDED.licence,
+            attribution = EXCLUDED.attribution, retrieved_at = EXCLUDED.retrieved_at, notes = EXCLUDED.notes
+    """, {**KRESZ_SOURCE, "date": date, "notes": f"version {date}"})
+    conn.execute("DELETE FROM szelveny.attribute_event WHERE source_id = 'kresz'")
+    f, t = KM.format(c="x.kszelv"), KM.format(c="x.vszelv")
+    n = conn.execute(f"""
+        WITH base AS (
+            SELECT r.road_id, x.pkod::smallint AS cw, {DEFAULT_SPEED_SQL} AS v,
+                   numrange(least({f}, {t}), greatest({f}, {t})) AS rng
+            FROM raw.nap_lakott_terulet x
+            JOIN szelveny.road r ON r.ref = x.kszam AND r.source_id = 'nap'
+            WHERE x.kutka NOT IN ('8', '9', 'P') AND x.kszelv LIKE '%%+%%' AND x.vszelv LIKE '%%+%%'
+        ), posted AS (
+            SELECT road_id, carriageway AS cw, range_agg(numrange(km_from, km_to)) AS mr
+            FROM szelveny.attribute_event WHERE source_id = 'nap' AND type = 'maxspeed'
+            GROUP BY 1, 2
+        ), free AS (
+            SELECT b.road_id, b.cw, b.v,
+                   unnest(nummultirange(b.rng) - coalesce(p.mr, '{{}}'::nummultirange)) AS rng
+            FROM base b LEFT JOIN posted p ON p.road_id = b.road_id AND p.cw = b.cw
+            WHERE b.v IS NOT NULL
+        )
+        INSERT INTO szelveny.attribute_event (road_id, km_from, km_to, type, value, carriageway,
+                                              source_id, source_date, licence)
+        SELECT road_id, round(lower(rng), 3), round(upper(rng), 3), 'maxspeed', v::text, cw,
+               'kresz', %(date)s, %(licence)s
+        FROM free WHERE upper(rng) - lower(rng) >= 0.001
+    """, {"date": date, "licence": KRESZ_SOURCE["licence"]}).rowcount
+    print(f"attributes: kresz: {n:,} general speed-limit events")
+
+
 def main() -> int:
     with psycopg.connect(PG_DSN) as conn:
         roads, by_key = load_roads(conn)
         for source_id, fn in (("osm", osm_events), ("osm", eroad_events), ("osm", curve_events),
-                              ("nap", nap_events)):
+                              ("nap", nap_events), ("nap", default_speed_events)):
             manifest = sources.read_manifest(source_id)
             if not manifest:
                 print(f"attributes: {source_id}: no download, skipped", file=sys.stderr)
