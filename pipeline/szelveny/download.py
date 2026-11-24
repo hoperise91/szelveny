@@ -1,10 +1,11 @@
-"""Phase 1: fetch public sources into data/raw/<source_id>/.
+"""Fetch open sources into data/raw/<source_id>/ (NAP has its own module, nap.py).
 
 Usage: python -m szelveny.download [source ...]    (default: all)
 Each download is skipped when the local copy already matches the published version.
 """
 
 import hashlib
+import re
 import socket
 import sys
 from email.utils import parsedate_to_datetime
@@ -22,6 +23,10 @@ GEOFABRIK_URL = "https://download.geofabrik.de/europe/hungary-latest.osm.pbf"
 OVERTURE_STAC = "https://stac.overturemaps.org/catalog.json"
 OVERTURE_S3 = "s3://overturemaps-us-west-2/release/{release}/theme=transportation/type={type}/*"
 GISCO = "https://gisco-services.ec.europa.eu/distribution/v2/"
+KSH_STADAT = "https://www.ksh.hu/stadat_files/sza/hu/"
+# STADAT tables for QA: national road length per county; road and rail network by surface.
+KSH_TABLES = {"sza0039": "24.1.2.1. Az országos közutak hossza vármegye és régió szerint",
+              "sza0030": "24.1.1.30. Út- és vasúthálózat"}
 
 
 # IPv4 only: CI machines have no IPv6, and a failed IPv6 attempt otherwise hides the real error.
@@ -89,6 +94,9 @@ def download_osm() -> None:
         version=data_date,
         files=[out.name],
         md5=remote_md5,
+        terms_url="https://www.openstreetmap.org/copyright",
+        terms_date="2026-11-24",
+        terms_copy="docs/legal/OSM_copyright_2026-11-24.html",
     )
     print(f"osm: saved {out.name} ({data_date})")
 
@@ -129,10 +137,13 @@ def download_overture() -> None:
         name="Overture Maps, transportation theme",
         url=f"https://docs.overturemaps.org/release/{release}/",
         licence="ODbL-1.0",
-        attribution="© OpenStreetMap contributors, Overture Maps Foundation",
+        attribution="© OpenStreetMap contributors, Overture Maps Foundation (incl. data from TomTom)",
         version=release,
         files=files,
         bbox=list(HU_BBOX),
+        terms_url="https://docs.overturemaps.org/attribution/",
+        terms_date="2026-11-24",
+        terms_copy="docs/legal/Overture_attribution_2026-11-24.html",
     )
 
 
@@ -181,10 +192,50 @@ def download_gisco() -> None:
 
 
 
+def download_ksh() -> None:
+    # KSH publishes its website content under CC BY 4.0 (www.ksh.hu/copyright). The CSVs are
+    # cp1250; the page carries the table's "Utolsó frissítés" (last update) date.
+    updated = {}
+    for table in KSH_TABLES:
+        page = http.get(f"{KSH_STADAT}{table}.html", timeout=60)
+        page.raise_for_status()
+        m = re.search(r"Utols\S* friss\S*\s*(?:<[^>]+>\s*)*(\d{4})\. (\w+) (\d{1,2})\.",
+                      page.content.decode("cp1250", "replace"))
+        if not m:
+            raise RuntimeError(f"ksh: {table}: last-update date not found, page layout changed?")
+        updated[table] = " ".join(m.groups())
+    version = "; ".join(f"{t} {d}" for t, d in updated.items())
+    current = sources.read_manifest("ksh")
+    if sources.files_present(current) and current["version"] == version:
+        print(f"ksh: up to date ({version})")
+        return
+    files = []
+    for table in KSH_TABLES:
+        r = http.get(f"{KSH_STADAT}{table}.csv", timeout=60)
+        r.raise_for_status()
+        out = sources.raw_dir("ksh") / f"{table}.csv"
+        out.write_text(r.content.decode("cp1250"), encoding="utf-8")
+        files.append(out.name)
+    sources.write_manifest(
+        "ksh",
+        name="KSH STADAT: " + "; ".join(KSH_TABLES.values()),
+        url=KSH_STADAT,
+        licence="CC-BY-4.0",
+        attribution="Forrás: KSH (www.ksh.hu)",
+        version=version,
+        files=files,
+        terms_url="https://www.ksh.hu/copyright",
+        terms_date="2026-11-24",
+        terms_copy="docs/legal/KSH_copyright_2026-11-24.html",
+    )
+    print(f"ksh: saved {', '.join(files)} ({version})")
+
+
 SOURCES = {
     "osm": download_osm,
     "overture": download_overture,
     "gisco": download_gisco,
+    "ksh": download_ksh,
 }
 
 

@@ -4,6 +4,7 @@ Usage: python -m szelveny.importer [source ...]    (default: all)
 Every import replaces its raw.* tables.
 """
 
+import csv
 import subprocess
 import sys
 
@@ -104,6 +105,50 @@ def import_gisco(conn) -> dict:
 
 
 
+def _ksh_number(v: str) -> float | None:
+    """'2 560' (space or no-break space as thousands separator) -> 2560.0; '..' -> None."""
+    v = v.replace("\xa0", "").replace(" ", "").replace(",", ".")
+    try:
+        return float(v)
+    except ValueError:
+        return None
+
+
+def import_ksh(conn) -> dict:
+    m = _require("ksh")
+    with open(DATA_RAW / "ksh" / "sza0039.csv", encoding="utf-8") as f:
+        rows = list(csv.reader(f, delimiter=";"))
+    years = [int(y) for y in rows[1][2:] if y.strip().isdigit()]
+    county_rows = []
+    for area, level, *values in rows[2:]:
+        if not area:
+            continue
+        county = county_code(area) if ("megye" in level or "főváros" in level) else None
+        for year, v in zip(years, values):
+            county_rows.append((area, level, county, year, _ksh_number(v)))
+    with open(DATA_RAW / "ksh" / "sza0030.csv", encoding="utf-8") as f:
+        rows = list(csv.reader(f, delimiter=";"))
+    measures = [" ".join(h.split()) for h in rows[1][1:]]
+    network_rows = [(int(r[0]), meas, _ksh_number(v))
+                    for r in rows[2:] if r and r[0].strip().isdigit()
+                    for meas, v in zip(measures, r[1:])]
+    conn.execute("""
+        DROP TABLE IF EXISTS raw.ksh_county_roads, raw.ksh_network;
+        CREATE TABLE raw.ksh_county_roads (
+            area text, level text,   -- as published ('Pest', 'megye, régió')
+            county text,             -- ISO 3166-2:HU code for counties and Budapest, else NULL
+            year integer, km numeric);
+        CREATE TABLE raw.ksh_network (year integer, measure text, km numeric);
+    """)
+    with conn.cursor().copy("COPY raw.ksh_county_roads FROM STDIN") as copy:
+        for row in county_rows:
+            copy.write_row(row)
+    with conn.cursor().copy("COPY raw.ksh_network FROM STDIN") as copy:
+        for row in network_rows:
+            copy.write_row(row)
+    return m
+
+
 SUMMARY_SQL = {
     "osm": """
         SELECT 'raw.osm_roads' AS "table", count(*) AS rows,
@@ -126,12 +171,18 @@ SUMMARY_SQL = {
         UNION ALL SELECT 'raw.gisco_lau', count(*), count(*) FILTER (WHERE county IS NOT NULL)
         FROM raw.gisco_lau
     """,
+    "ksh": """
+        SELECT 'raw.ksh_county_roads' AS "table", count(*) AS rows,
+               count(DISTINCT county) AS counties FROM raw.ksh_county_roads
+        UNION ALL SELECT 'raw.ksh_network', count(*), count(DISTINCT measure) FROM raw.ksh_network
+    """,
 }
 
 SOURCES = {
     "osm": import_osm,
     "overture": import_overture,
     "gisco": import_gisco,
+    "ksh": import_ksh,
 }
 
 

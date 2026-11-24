@@ -1,0 +1,13 @@
+{
+  "source_id": "osm",
+  "name": "OpenStreetMap (Geofabrik Hungary extract)",
+  "url": "https://download.geofabrik.de/europe/hungary-latest.osm.pbf",
+  "licence": "ODbL-1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "version": "2026-11-24",
+  "retrieved_at": "2026-11-24T12:18:27+00:00",
+  "files": [
+    "hungary-latest.osm.pbf"
+  ],
+  "md5": "57d09a4fdc29e5d6da5aa120cb654f5e"
+}

@@ -51,7 +51,7 @@ psql: ## Open a psql shell in the DB container
 
 ## --- pipeline ------------------------------------------------------------
 
-download: setup ## Fetch open sources into data/raw/ (SOURCES=osm overture gisco)
+download: setup ## Fetch open sources into data/raw/ (SOURCES=osm overture ksh)
 	$(RUN) szelveny.download $(SOURCES)
 
 import: setup db-up ## Load data/raw/ into PostGIS (raw schema)
@@ -86,7 +86,7 @@ refresh: setup ## Compare the new export with the live one, run the checks, writ
 
 R2_BUCKET ?= szelveny-data
 R2_RAW_BUCKET ?= szelveny-raw
-SLOW_SOURCES := gisco nap
+SLOW_SOURCES := ksh nap
 SAVED_SOURCES := osm $(SLOW_SOURCES)   # copies in the private bucket, for when a server refuses CI
 # rclone reads its R2 remote from the environment; keys stay out of the echoed command.
 R2_ENV = RCLONE_CONFIG_R2_TYPE=s3 RCLONE_CONFIG_R2_PROVIDER=Cloudflare \

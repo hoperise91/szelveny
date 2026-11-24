@@ -1,0 +1,22 @@
+{
+  "source_id": "overture",
+  "name": "Overture Maps, transportation theme",
+  "url": "https://docs.overturemaps.org/release/2026-11-18.0/",
+  "licence": "ODbL-1.0",
+  "attribution": "© OpenStreetMap contributors, Overture Maps Foundation (incl. data from TomTom)",
+  "version": "2026-11-18.0",
+  "retrieved_at": "2026-11-24T12:17:11+00:00",
+  "files": [
+    "segment.parquet",
+    "connector.parquet"
+  ],
+  "bbox": [
+    16.1,
+    45.7,
+    22.95,
+    48.6
+  ],
+  "terms_url": "https://docs.overturemaps.org/attribution/",
+  "terms_date": "2026-11-24",
+  "terms_copy": "docs/legal/Overture_attribution_2026-11-24.html"
+}

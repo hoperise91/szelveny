@@ -1,0 +1,16 @@
+{
+  "source_id": "ksh",
+  "name": "KSH STADAT: 24.1.2.1. Az országos közutak hossza vármegye és régió szerint; 24.1.1.30. Út- és vasúthálózat",
+  "url": "https://www.ksh.hu/stadat_files/sza/hu/",
+  "licence": "CC-BY-4.0",
+  "attribution": "Forrás: KSH (www.ksh.hu)",
+  "version": "sza0039 2026 június 30; sza0030 2025 november 25",
+  "retrieved_at": "2026-11-24T12:17:47+00:00",
+  "files": [
+    "sza0039.csv",
+    "sza0030.csv"
+  ],
+  "terms_url": "https://www.ksh.hu/copyright",
+  "terms_date": "2026-11-24",
+  "terms_copy": "docs/legal/KSH_copyright_2026-11-24.html"
+}
