@@ -73,7 +73,7 @@ All downloads write manifests (licence, terms URL and date, attribution). NAP fe
 | Overture transportation | ✅ `raw.overture_*` (ODbL; incl. TomTom data) |
 | KSH STADAT 24.1.2.1, 24.1.1.30 | ✅ `raw.ksh_county_roads`, `raw.ksh_network` (CC BY 4.0) |
 | kozadatportal: Magyar Közút tables | ✅ `data/raw/kozut_nc/`, latest year of 7 datasets, **CC BY-NC 2.0**, kept separate; static, fetched once |
-| Eurostat GISCO (NUTS, LAU) | ⏸ **non-commercial only** per the GISCO download terms: not used; waiting for the owner. OSM gives counties already |
+| Eurostat GISCO (NUTS, LAU) | ✅ `raw.gisco_nuts` (20 counties), `raw.gisco_lau` (3,155 settlements). **Non-commercial** terms; owner approved 2026-11-24 (Szelvény is not used commercially) |
 | EuroRegionalMap | ⏸ needs the owner's `ERM_TOKEN` in `.env`; licence page to confirm |
 | TENtec | ⏸ the public page offers PDF maps only, no GIS download or reuse terms found |
 

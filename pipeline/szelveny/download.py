@@ -182,10 +182,15 @@ def download_gisco() -> None:
         "gisco",
         name="Eurostat GISCO administrative units (NUTS, LAU)",
         url=GISCO,
-        licence="Eurostat GISCO reuse policy (attribution required)",
+        licence="Eurostat GISCO administrative units terms: non-commercial use, source acknowledged",
         attribution="© EuroGeographics for the administrative boundaries; Eurostat GISCO",
         version=version,
         files=files,
+        non_commercial=True,
+        owner_decision="2026-11-24: approved; Szelvény is not used commercially",
+        terms_url="https://ec.europa.eu/eurostat/web/gisco/geodata/administrative-units",
+        terms_date="2026-11-24",
+        terms_copy="docs/legal/Eurostat_GISCO_administrative_units_2026-11-24.html",
     )
     print(f"gisco: saved {', '.join(files)}")
 

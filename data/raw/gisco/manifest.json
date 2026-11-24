@@ -1,0 +1,18 @@
+{
+  "source_id": "gisco",
+  "name": "Eurostat GISCO administrative units (NUTS, LAU)",
+  "url": "https://gisco-services.ec.europa.eu/distribution/v2/",
+  "licence": "Eurostat GISCO administrative units terms: non-commercial use, source acknowledged",
+  "attribution": "© EuroGeographics for the administrative boundaries; Eurostat GISCO",
+  "version": "NUTS 2024, LAU 2024",
+  "retrieved_at": "2026-11-24T12:25:12+00:00",
+  "files": [
+    "NUTS_RG_01M_2024_4326.gpkg",
+    "LAU_RG_01M_2024_4326.gpkg"
+  ],
+  "non_commercial": true,
+  "owner_decision": "2026-11-24: approved; Szelvény is not used commercially",
+  "terms_url": "https://ec.europa.eu/eurostat/web/gisco/geodata/administrative-units",
+  "terms_date": "2026-11-24",
+  "terms_copy": "docs/legal/Eurostat_GISCO_administrative_units_2026-11-24.html"
+}

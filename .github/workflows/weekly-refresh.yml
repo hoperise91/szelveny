@@ -25,7 +25,7 @@ jobs:
         shell: bash -el {0}   # login shell, so the micromamba tools are on PATH
     env:
       # Overture is not used after import (only for exploration), so the weekly run skips it.
-      SOURCES: osm ksh   # what `make import` loads (GISCO is non-commercial only: not used)
+      SOURCES: osm gisco ksh   # what `make import` loads
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
               fi
             fi
           fi
-          for s in ksh; do
+          for s in gisco ksh; do
             timeout 600 make download SOURCES=$s || { make restore-raw S=$s && echo $s >> data/out/refresh/fallbacks; }
           done
           make import
