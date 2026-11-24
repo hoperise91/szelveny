@@ -46,8 +46,10 @@ TWIN_M = 80            # a whole piece running this close alongside a longer pie
 TWIN_SHARE = 0.8       # ... for at least this share of its length is the other carriageway
 FOLD_NEAR_M = 70       # the path passing this close to itself, ...
 FOLD_MIN_M = 1500      # ... at least this far apart along it, is running back on itself
-# Roads taken from OSM: short bekötő utak are real, so the bar is low; tune in Phase 3 against NAP.
-OSM_ONLY_MIN_M = 300   # numbered roads mapped shorter than this go to the review list
+# Roads taken from OSM only when NAP lacks them. NAP holds the whole national network, so these
+# are new roads or tagging mistakes: shorter than this they go to the review list (border
+# stubs like Slovenian 723, mistyped refs).
+OSM_ONLY_MIN_M = 1000
 OSM_ONLY_CATEGORIES = CATEGORIES
 OSM_ONLY_HIGHWAYS = ("motorway", "trunk", "primary", "secondary", "tertiary", "unclassified")
 OSM_ONLY_MAX_SHARED = 0.5  # a candidate mostly on ways of an official road is an alias
@@ -110,6 +112,14 @@ def build_way_refs(conn) -> None:
         FROM raw.osm_roads w JOIN county_part c ON ST_Intersects(w.geom, c.geom)
         WHERE w.osm_id IN (SELECT osm_id FROM szelveny.osm_way_ref);
         DROP TABLE county_part, ref_map;
+        -- The Geofabrik extract reaches over the border, where roads carry plain numbers too
+        -- (Slovak 1414, Slovenian 723): only ways whose midpoint is in Hungary are kept.
+        CREATE TEMP TABLE hu AS SELECT ST_Subdivide(ST_Union(geom), 256) AS geom FROM raw.osm_counties;
+        CREATE INDEX ON hu USING gist (geom);
+        DELETE FROM szelveny.osm_way_ref x USING raw.osm_roads w
+        WHERE w.osm_id = x.osm_id AND NOT EXISTS (
+            SELECT 1 FROM hu WHERE ST_Intersects(hu.geom, ST_LineInterpolatePoint(w.geom, 0.5)));
+        DROP TABLE hu;
     """)
     # OSM county names ('Győr-Moson-Sopron vármegye', 'Budapest') -> ISO codes
     for (name,) in conn.execute("SELECT DISTINCT county FROM szelveny.osm_way_county").fetchall():
