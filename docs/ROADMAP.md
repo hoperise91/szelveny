@@ -65,6 +65,8 @@
 
 All downloads write manifests (licence, terms URL and date, attribution). NAP fetches are weekly at most, cached, and respect CLAUDE.md's access rules.
 
+**NAP download method (owner, 2026-11-24):** `nap.py` may call each subscribed package's documented WFS link (the "Adatelérés" URLs on its metadata page; layer names in `data/raw/nap/manifest.json`) directly, weekly at most, with caching and backoff. No other GeoServer/WFS queries without asking.
+
 ## Phase 3: Reference network
 1. Load the NAP national network as `szelveny.road` / `road_segment` with official chainage (`km_quality = official`).
 2. OSM roads not in NAP (local and municipal) are added as `km_quality = none`, identified by name + settlement.
