@@ -789,7 +789,7 @@ def main() -> int:
         n_ways, n_refs = conn.execute(
             "SELECT count(DISTINCT osm_id), count(DISTINCT ref) FROM szelveny.osm_way_ref").fetchone()
         print(f"lrs: {n_ways:,} ways carry {n_refs:,} distinct road numbers")
-        results, held_out = build(conn, holdout)
+        _results, held_out = build(conn, holdout)
         conn.commit()
         checkpoints = check_checkpoints(conn)
 
@@ -860,7 +860,7 @@ def main() -> int:
             print(f"held-out milestones: {len(errs)} of {len(held_out)} located; median "
                   f"{pct(0.5):.0f} m, 80% within {pct(0.8):.0f} m, 95% within {pct(0.95):.0f} m; "
                   f"{within} ({100 * within / len(errs):.0f}%) within {CHECKPOINT_TARGET_M} m")
-    return 0 if results else 1
+    return 0
 
 
 if __name__ == "__main__":

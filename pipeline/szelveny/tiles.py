@@ -138,6 +138,11 @@ def export_tiles(conn, tmp: Path) -> None:
     print(f"tiles: {out.name} {out.stat().st_size / 1e6:.1f} MB")
 
 
+# Local roads (~100k streets, local.py) are on the map but get no road file or index row yet:
+# a static file per street and a 100k-row search index need a Phase 4 decision.
+FILE_CATEGORIES_SQL = "r.category <> 'local'"
+
+
 def export_roads(conn) -> int:
     roads_dir = WEB_DATA / "roads"
     if roads_dir.exists():
@@ -146,11 +151,12 @@ def export_roads(conn) -> int:
 
     segments: dict[int, list] = {}
     for road_id, f, t, q, coords in conn.execute(f"""
-            SELECT road_id, km_from, km_to, km_quality,
+            SELECT s.road_id, s.km_from, s.km_to, s.km_quality,
                    ST_AsGeoJSON(ST_Transform(ST_SimplifyPreserveTopology(
-                       ST_Transform(geom, {CRS_METRIC}), {SIMPLIFY_M}), 4326), {COORD_DECIMALS})::json
+                       ST_Transform(s.geom, {CRS_METRIC}), {SIMPLIFY_M}), 4326), {COORD_DECIMALS})::json
                        -> 'coordinates'
-            FROM szelveny.road_segment ORDER BY road_id, sequence"""):
+            FROM szelveny.road_segment s JOIN szelveny.road r USING (road_id)
+            WHERE {FILE_CATEGORIES_SQL} ORDER BY road_id, sequence"""):
         segments.setdefault(road_id, []).append([float(f), float(t), q, coords])
 
     attrs: dict[int, dict] = {}
@@ -184,7 +190,8 @@ def export_roads(conn) -> int:
                                  round(ST_XMax(b)::numeric, 4), round(ST_YMax(b)::numeric, 4)]
                     FROM (SELECT ST_Extent(geom)::geometry AS b FROM szelveny.road_segment s
                           WHERE s.road_id = r.road_id) e WHERE b IS NOT NULL)
-            FROM szelveny.road r LEFT JOIN szelveny.lrs_road l USING (road_id)"""):
+            FROM szelveny.road r LEFT JOIN szelveny.lrs_road l USING (road_id)
+            WHERE {FILE_CATEGORIES_SQL}"""):
         num = (lambda v: None if v is None else float(v))
         doc = {
             "key": key, "ref": ref, "county": county, "category": category, "route": route,
