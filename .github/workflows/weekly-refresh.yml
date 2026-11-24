@@ -73,10 +73,12 @@ jobs:
 
       - name: Build the network
         run: |
-          # Accuracy first: a pass that keeps every 5th milestone out of calibration and measures
-          # the error at them (holdout.json → accuracy.json); then the full build that is published.
+          # The official network from NAP first (fails the run if a checkpoint is > 20 m off).
+          make reference
+          # OSM-only numbered roads: a pass that keeps every 5th milestone out of calibration and
+          # measures the error at them (holdout.json → accuracy.json); then the full build.
           make lrs ARGS=--holdout
-          make lrs attributes objects qa tiles
+          make lrs local attributes objects qa tiles
 
       - name: Unit tests
         run: make test

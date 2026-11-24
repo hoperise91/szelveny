@@ -86,6 +86,13 @@ All downloads write manifests (licence, terms URL and date, attribution). NAP fe
 4. **QA report** (as in Szelvény): NAP length vs KSH per county, NAP vs OSM geometry offsets, NAP vs EuroRegionalMap road numbers, and a list of differences that could also help the Hungarian OSM community. That community already compares OSM with NAP; contact them via the talk-hu list or the Matrix room before publishing a diff.
 5. Checkpoints: `tests/lrs_checkpoints.csv` with ~30 known positions (km posts on Mapillary, bridge ends). Target ±20 m on official sections.
 
+**Done 2026-11-24** (`make reference lrs local attributes objects qa`):
+- 3.1 `reference.py`: 6,430 NAP roads, 22,341 sections with official szelvény, carriageway and NAP's own strings; class and administrator (kezelő) per road. 32,742 km excl. cycle paths vs KSH 2025 32,708 km.
+- 3.2 `lrs.py` adds OSM-numbered roads NAP lacks (none ≥ 1 km on this data, 13 to review); `local.py`: 104,280 local roads by name + settlement (km_quality `none`), on the map only for now.
+- 3.3 NAP attributes as events (~224k: lanes, speed limits, surface, width, AADT 2025, built-up, one-way, truck limits, bridges) and point objects (km posts, bridges, rest areas). The export shows NAP's value where NAP has one; OSM's stay in the database with their source.
+- 3.4 QA (`data/out/qa/README.md`): NAP vs KSH per county within ±0.6% except Szabolcs-Szatmár-Bereg (+2.0%); NAP vs OSM geometry median 0.2 m, 99.9% within 10 m; 38 stretches where OSM is > 30 m off or missing; 26 NAP numbers no OSM way carries. Not published: contact the OSM community first. NAP vs EuroRegionalMap waits for the token.
+- 3.5 `tests/lrs_checkpoints.csv`: 29 NAP km posts (4 categories, 20 counties), all within 20 m (median 0–5 m). NAP km posts overall: median 1.3 m; OSM km posts (independent): median 17.7 m.
+
 ## Phase 4: Portal MVP
 - `/`: map with toggles (road class, speed limit, lanes, built-up areas, bridges).
 - `/ut/M1`: road page with official length, counties crossed, a szelvény strip diagram and attributes.
