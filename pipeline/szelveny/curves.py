@@ -1,6 +1,6 @@
-"""Phase 4.8: horizontal curves (NVDB Kurvatur) from Bornă's own centrelines.
+"""Phase 4.8: horizontal curves (NVDB Kurvatur) from Szelvény's own centrelines.
 
-Each road's centreline (borna.road_segment, OSM-derived, so ODbL) is cleaned lightly, resampled
+Each road's centreline (szelveny.road_segment, OSM-derived, so ODbL) is cleaned lightly, resampled
 every STEP_M along the line in the metric CRS, and its heading is followed. The curvature at a
 point is the heading change over a window of ±HALF_WINDOW_M (±LONG_HALF_WINDOW_M for radii over
 SHORT_MAX_RADIUS_M); its inverse is the radius.
@@ -21,7 +21,7 @@ import shapely
 from shapely import wkb
 from shapely.geometry import LineString
 
-from borna.config import CRS_METRIC
+from szelveny.config import CRS_METRIC
 
 STEP_M = 10.0          # resampling step along the centreline
 HALF_WINDOW_M = 30.0   # curvature = heading change over ±30 m (a 60 m window) ...
@@ -149,9 +149,9 @@ def curve_rows(roads, roundabouts=None) -> list[tuple]:
 def curve_events(conn, manifest: dict, roads, by_key) -> None:
     rows = curve_rows(roads, load_roundabouts(conn))
     print(f"attributes: curve: {len(rows):,} curves")
-    conn.execute("DELETE FROM borna.attribute_event WHERE source_id = 'osm' AND type = 'curve'")
+    conn.execute("DELETE FROM szelveny.attribute_event WHERE source_id = 'osm' AND type = 'curve'")
     with conn.cursor().copy(
-            "COPY borna.attribute_event (road_id, type, value, km_from, km_to, source_id, "
+            "COPY szelveny.attribute_event (road_id, type, value, km_from, km_to, source_id, "
             "source_date, licence) FROM STDIN") as copy:
         for rid, typ, value, f, t in rows:
             if t > f:

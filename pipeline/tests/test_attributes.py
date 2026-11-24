@@ -1,7 +1,7 @@
 import pytest
 from shapely.geometry import LineString, Point
 
-from borna.attributes import RoadLine, place
+from szelveny.attributes import RoadLine, place
 
 
 def road() -> RoadLine:

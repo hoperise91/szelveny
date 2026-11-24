@@ -6,7 +6,7 @@ import { organization, website } from "../lib/seo";
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const s = strings[lang];
-const examples = ["DN1 km 27+400", "DN12", "DJ103", "Covasna"];
+const examples = ["M1 12+300", "8", "4512", "Zala"];
 const layers = [
   ["category", s.layer_category], ["surface", s.layer_surface], ["maxspeed", s.layer_maxspeed],
   ["aadt", s.layer_aadt], ["width", s.layer_width], ["owner", s.layer_owner],
@@ -20,7 +20,7 @@ const layers = [
     data-strings={JSON.stringify(s)}
     data-road-url={routes[lang].road}
   >
-    <h1 class="visually-hidden">Bornă: {s.tagline}</h1>
+    <h1 class="visually-hidden">Szelvény: {s.tagline}</h1>
     <aside class="side" aria-label={s.browse_counties}>
       <button type="button" class="sheet-handle" id="sheet-handle" aria-expanded="false"
         aria-label={s.sheet_toggle}><span></span></button>

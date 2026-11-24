@@ -3,7 +3,7 @@ import math
 import numpy as np
 from shapely.geometry import LineString
 
-from borna.curves import _curves_on_piece, _pieces, radius_class
+from szelveny.curves import _curves_on_piece, _pieces, radius_class
 
 
 def arc(r: float, deg: float, straight: float = 200.0) -> np.ndarray:

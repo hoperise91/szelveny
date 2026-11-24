@@ -1,11 +1,11 @@
--- Bornă: osm2pgsql flex style. Roads, road points and road route relations
+-- Szelvény: osm2pgsql flex style. Roads, road points and road route relations
 -- from OSM into the `raw` schema. Values are kept as tagged (text); normalisation
 -- (ref splitting, maxspeed parsing, …) happens in Phase 2, not here.
 
 local SCHEMA = 'raw'
 local SRID = 4326
 
--- highway=* values that make up the public road network (incl. DC roads that are
+-- highway=* values that make up the public road network (incl. local roads that are
 -- often mapped as track/unclassified). service ways are kept only when they carry a ref.
 local ROAD_TYPES = {
     motorway = true, motorway_link = true,
@@ -65,8 +65,13 @@ local routes = osm2pgsql.define_table({
     },
 })
 
--- County (județ) boundaries, admin_level 4, incl. Municipiul București. Precise enough to place
--- the HG 540 county-border km positions (GISCO 1:1M is not).
+-- County (vármegye) boundaries and Budapest, picked by their ISO 3166-2:HU tag so that
+-- neighbouring countries' units and the cities with county rights (also HU-xx, but not
+-- admin_level 6) stay out. Precise enough to tag roads by county (GISCO 1:1M is not).
+local COUNTY_ISO = {}
+for code in string.gmatch('BK BA BE BZ BU CS FE GS HB HE JN KE NO PE SO SZ TO VA VE ZA', '%u%u') do
+    COUNTY_ISO['HU-' .. code] = true
+end
 local counties = osm2pgsql.define_table({
     name = 'osm_counties',
     schema = SCHEMA,
@@ -78,7 +83,7 @@ local counties = osm2pgsql.define_table({
     },
 })
 
--- Ferry crossings (route=ferry): the Danube crossings link roads where there is no bridge.
+-- Ferry crossings (route=ferry): the Danube and Tisza crossings link roads where there is no bridge.
 local ferries = osm2pgsql.define_table({
     name = 'osm_ferries',
     schema = SCHEMA,
@@ -158,7 +163,8 @@ end
 
 function osm2pgsql.process_relation(object)
     local t = object.tags
-    if t.type == 'boundary' and t.boundary == 'administrative' and t.admin_level == '4' then
+    if t.type == 'boundary' and t.boundary == 'administrative' and COUNTY_ISO[t['ISO3166-2']]
+            and (t.admin_level == '6' or t['ISO3166-2'] == 'HU-BU') then
         counties:insert({ name = t.name, tags = t, geom = object:as_multipolygon() })
         return
     end

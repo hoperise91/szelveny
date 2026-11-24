@@ -1,7 +1,7 @@
-# Bornă: everything is open to crawlers.
-# Old client-side road links (/drum/?r=KEY) stay crawlable: they carry noindex and redirect
-# to /drum/<KEY>/, which a Disallow here would hide from search engines.
+# Szelvény: everything is open to crawlers.
+# Client-side road links (/ut/?r=KEY) stay crawlable: they carry noindex and redirect
+# to /ut/<KEY>/, which a Disallow here would hide from search engines.
 User-agent: *
 Allow: /
 
-Sitemap: https://bornakm.ro/sitemap.xml
+Sitemap: https://szelveny.hu/sitemap.xml

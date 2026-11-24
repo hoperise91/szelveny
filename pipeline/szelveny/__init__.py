@@ -1,0 +1,1 @@
+"""Szelvény data pipeline."""

@@ -3,7 +3,7 @@ import type { Lang } from "./i18n";
 import { type IndexRow, hasStaticPage } from "./roads";
 import { loadIndex } from "./site-data";
 
-const natural = new Intl.Collator("ro", { numeric: true }).compare;
+const natural = new Intl.Collator("hu", { numeric: true }).compare;
 
 export async function roadPaths(lang: Lang) {
   const rows = (await loadIndex()).filter((r) => hasStaticPage(lang, r[3]));

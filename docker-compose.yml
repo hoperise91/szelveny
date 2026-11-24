@@ -1,19 +1,19 @@
 services:
   db:
     image: postgis/postgis:16-3.4
-    container_name: borna-db
+    container_name: szelveny-db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-borna}
-      POSTGRES_USER: ${POSTGRES_USER:-borna}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-borna}
+      POSTGRES_DB: ${POSTGRES_DB:-szelveny}
+      POSTGRES_USER: ${POSTGRES_USER:-szelveny}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-szelveny}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       # Runs once, on first start with an empty volume.
       - ./pipeline/sql/00_schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-borna} -d ${POSTGRES_DB:-borna}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-szelveny} -d ${POSTGRES_DB:-szelveny}"]
       interval: 5s
       timeout: 5s
       retries: 10

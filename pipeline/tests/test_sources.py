@@ -1,4 +1,4 @@
-from borna import sources
+from szelveny import sources
 
 
 def test_manifest_roundtrip(tmp_path, monkeypatch):

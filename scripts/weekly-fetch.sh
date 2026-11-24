@@ -1,8 +1,8 @@
 #!/bin/bash
-# Weekly fetch helper (runs on the owner's Mac via launchd, see deploy/ro.bornakm.fetch.plist).
-# Some public servers refuse CI machines (Geofabrik at times, legislatie.just.ro always), so the
-# Mac downloads fresh OpenStreetMap + HG 540 once a week and saves them to the private R2 bucket;
-# the GitHub weekly refresh uses these copies when a server refuses it.
+# Weekly fetch helper (runs on the owner's Mac via launchd, see deploy/hu.szelveny.fetch.plist).
+# Some public servers refuse CI machines (Geofabrik at times), so the Mac downloads fresh
+# OpenStreetMap once a week and saves it to the private R2 bucket; the GitHub weekly refresh
+# uses this copy when a server refuses it.
 # launchd starts this every few hours; it does the work at most once every 6 days.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -25,7 +25,7 @@ case "$net" in
 esac
 {
   echo "=== $(date '+%F %T') weekly fetch"
-  make download SOURCES="osm hg540"
+  make download SOURCES=osm
   make snapshot-raw
   touch "$stamp"
   echo "=== done"

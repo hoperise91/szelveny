@@ -1,4 +1,4 @@
-/* Bornă: warm paper, ink, route-shield colours. Light and dark. */
+/* Szelvény: warm paper, ink, route-shield colours. Light and dark. */
 :root {
   --paper: #f6f3ec;
   --panel: #fffdf8;
@@ -7,11 +7,11 @@
   --ink-3: #8d887d;
   --line: #e2ddd1;
   --line-2: #cfc8b8;
-  --accent: #c8102e;            /* DN red, the bornă cap */
+  --accent: #1f5aa6;            /* Szelvény blue (the km-post cap in the logo) */
   --focus: #1d5fbf;
   --hl: #ffcf33;                /* selected road */
-  --c-A: #0f7b45; --c-DX: #2e9e62; --c-DN: #c8102e; --c-V: #d4566b;
-  --c-DJ: #1d5fbf; --c-DC: #b8800f; --c-DP: #7c7c7c;
+  /* road categories: M gyorsforgalmi, F főút, OK összekötő, BK bekötő, local (as roads.ts) */
+  --c-M: #1f5aa6; --c-F: #c8102e; --c-OK: #d9822b; --c-BK: #7a8f2e; --c-local: #7c7c7c;
   --radius: 10px;
   --shadow: 0 1px 2px rgba(40, 32, 16, .06), 0 6px 24px rgba(40, 32, 16, .08);
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
@@ -77,15 +77,13 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
   min-width: 46px; height: 24px; padding: 0 8px;
   border-radius: 5px; color: #fff;
   font: 700 15px/1 var(--font-display); letter-spacing: .03em;
-  background: var(--c-DP); white-space: nowrap; flex: none;
+  background: var(--c-local); white-space: nowrap; flex: none;
 }
 .shield.lg { height: 38px; min-width: 72px; font-size: 26px; border-radius: 7px; padding: 0 12px; }
-.shield[data-cat="A"] { background: var(--c-A); }
-.shield[data-cat="DX"] { background: var(--c-DX); }
-.shield[data-cat="DN"] { background: var(--c-DN); }
-.shield[data-cat="V"] { background: var(--c-V); }
-.shield[data-cat="DJ"] { background: var(--c-DJ); }
-.shield[data-cat="DC"] { background: var(--c-DC); }
+.shield[data-cat="M"] { background: var(--c-M); }
+.shield[data-cat="F"] { background: var(--c-F); }
+.shield[data-cat="OK"] { background: var(--c-OK); }
+.shield[data-cat="BK"] { background: var(--c-BK); }
 
 /* ---- buttons, chips, inputs ---- */
 .btn {

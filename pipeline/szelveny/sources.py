@@ -1,12 +1,12 @@
 """Source manifests: every downloaded dataset records where it came from, when, and under
 what licence. `download` writes data/raw/<source_id>/manifest.json; `importer` turns it
-into a borna.source row."""
+into a szelveny.source row."""
 
 import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from borna.config import DATA_RAW
+from szelveny.config import DATA_RAW
 
 
 def raw_dir(source_id: str) -> Path:
@@ -45,10 +45,10 @@ def files_present(manifest: dict | None) -> bool:
 
 
 def register(conn, manifest: dict) -> None:
-    """Upsert the manifest into borna.source."""
+    """Upsert the manifest into szelveny.source."""
     conn.execute(
         """
-        INSERT INTO borna.source (source_id, name, url, licence, attribution, retrieved_at, notes)
+        INSERT INTO szelveny.source (source_id, name, url, licence, attribution, retrieved_at, notes)
         VALUES (%(source_id)s, %(name)s, %(url)s, %(licence)s, %(attribution)s,
                 %(retrieved_at)s, 'version ' || %(version)s)
         ON CONFLICT (source_id) DO UPDATE SET

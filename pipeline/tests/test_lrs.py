@@ -1,7 +1,7 @@
 import pytest
 from shapely.geometry import LineString, Point
 
-from borna.lrs import (
+from szelveny.lrs import (
     Control,
     _end_refs,
     anchors_for,
@@ -12,33 +12,23 @@ from borna.lrs import (
     segment_quality,
 )
 
-BYPASS = {"CB", "VTM", "7CC"}
-
 
 @pytest.mark.parametrize("token,expected", [
-    ("DN 6", ("DN6", "DN")),
-    ("DJ103G", ("DJ103G", "DJ")),
-    ("DEx12", ("DX12", "DX")),
-    ("DNCB", ("CB", "V")),
-    ("DN7CC", ("7CC", "V")),
-    ("VTM", ("VTM", "V")),
-    ("DNVOF", ("VOF", "V")),       # Făgăraș bypass, not in HG 540 yet
-    ("DNVO1Z", ("VO1Z", "V")),     # Centura Oradea
-    ("VO3G", ("VO3G", "V")),
-    ("DN17VO", ("DN17VO", "DN")),
-    ("VALEAFARCASE", None),        # a valley name, not a road number
-    ("34", None),
+    ("M 1", ("M1", "M")),
+    ("M0", ("M0", "M")),
+    ("86", ("86", "F")),
+    ("4512", ("4512", "OK")),
     ("E60", None),
-    ("DC", None),
+    ("D2", None),                  # a Slovak road number on a border way
 ])
 def test_normalise_osm_ref(token, expected):
-    assert normalise_osm_ref(token, BYPASS) == expected
+    assert normalise_osm_ref(token) == expected
 
 
 def test_end_refs():
-    assert _end_refs("Chichiș (DN 11)- Sfântu Gheorghe- Toplița (DN 15)") == ("DN11", "DN15")
-    assert _end_refs("DN 1C - Muncel") == ("DN1C", None)
-    assert _end_refs("București- Ploiești") == (None, None)
+    assert _end_refs("Lenti (M70) - Zalaegerszeg - Győr (1)") == ("M70", "1")
+    assert _end_refs("Zalaegerszeg (74. sz. főút) - Pápa") == ("74", None)
+    assert _end_refs("Budapest - Hegyeshalom") == (None, None)
 
 
 def test_build_path_bridges_gap_and_picks_one_carriageway():
@@ -61,7 +51,7 @@ def test_build_path_leaves_far_pieces_out():
 
 
 def test_build_path_links_pieces_of_national_roads():
-    # A1-like: two open sections 20 km apart; km must run on, the gap must not be drawn
+    # M0-like: two open sections 20 km apart; km must run on, the gap must not be drawn
     lines = [LineString([(0, 0), (10000, 0)]), LineString([(30000, 0), (45000, 0)])]
     path, gaps = build_path(lines, connect_pieces=True)
     assert path.length == pytest.approx(45000)
@@ -70,13 +60,13 @@ def test_build_path_links_pieces_of_national_roads():
 
 
 def test_without_gaps():
-    from borna.lrs import without_gaps
+    from szelveny.lrs import without_gaps
     assert without_gaps(0, 100, [(20, 40), (60, 70)]) == [(0, 20), (40, 60), (70, 100)]
     assert without_gaps(0, 100, [(-10, 5), (95, 120)]) == [(5, 95)]
 
 
 def test_orientation_from_controls_and_route_ends():
-    rev, how = decide_orientation(10000, 0, 10, [Control(1000, 9, "border"),
+    rev, how = decide_orientation(10000, 0, 10, [Control(1000, 9, "junction"),
                                                  Control(9000, 1, "milestone")], None)
     assert (rev, how) == (True, "controls")
     assert decide_orientation(10000, 0, 10, [], 500) == (False, "route_ends")
@@ -90,7 +80,7 @@ def test_anchors_official_ends_without_controls():
 
 
 def test_anchors_true_scale_when_path_disagrees_with_official_span():
-    # register says km 0-68.8, the mapped road is 400 km: don't squeeze, count at true scale
+    # official km 0-68.8, the mapped road is 400 km: don't squeeze, count at true scale
     a = anchors_for(400000, 0, 68.8, [])
     assert [(c.km, c.kind) for c in a] == [(0, "start"), (400, "extrapolated")]
 
@@ -119,11 +109,11 @@ def test_attach_junctions_extends_path_to_the_other_road():
 
 
 def test_stop_names():
-    from borna.lrs import stop_names
-    assert stop_names("Ghimbav (DN 1) - Brașov") == ("GHIMBAV", "BRASOV")
-    assert stop_names("Limită județ Brașov - Aita Mare (DJ 103E) - Vârghiș") == (None, "VARGHIS")
-    assert stop_names("Mun. Sfântu Gheorghe - Băile Șugaș") == ("SFANTU GHEORGHE", "BAILE SUGAS")
-    assert stop_names("DN 1C - Muncel") == (None, "MUNCEL")
+    from szelveny.lrs import stop_names
+    assert stop_names("Győr (1) - Pápa") == ("GYOR", "PAPA")
+    assert stop_names("Megyehatár - Nagykanizsa (7) - Zákány") == (None, "ZAKANY")
+    assert stop_names("Hódmezővásárhely - Makó") == ("HODMEZOVASARHELY", "MAKO")
+    assert stop_names("M7 csomópont - Siófok") == (None, "SIOFOK")
 
 
 def test_dual_carriageway_joined_at_one_end_is_not_doubled():
@@ -140,7 +130,7 @@ def test_dual_carriageway_joined_at_one_end_is_not_doubled():
 def test_fold_at_one_end_is_removed():
     # carriageways joined at the east end only, far apart at the west end (no bridge):
     # the path must not run east on one side and back west on the other
-    from borna.lrs import build_path
+    from szelveny.lrs import build_path
     north = LineString([(0, 0), (40000, 0)])
     south = LineString([(40000, 30), (500, 30)])            # stops 500 m short: > GAP_M from (0, 0)
     link = LineString([(40000, 0), (40000, 30)])
@@ -151,7 +141,7 @@ def test_fold_at_one_end_is_removed():
 def test_twin_carriageway_pieces_are_not_linked_into_a_u():
     # two sections, each mapped as two separate carriageways (no slip roads): keep one side
     # of each and link the sections end to end
-    from borna.lrs import build_path
+    from szelveny.lrs import build_path
     a1 = LineString([(0, 0), (20000, 0)])
     a2 = LineString([(20000, 30), (0, 30)])
     b1 = LineString([(30000, 0), (50000, 0)])

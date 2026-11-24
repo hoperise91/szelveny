@@ -5,13 +5,13 @@ import { CONTACT_EMAIL, routes, strings, type Lang } from "../lib/i18n";
 import { type IndexRow, hasStaticPage, roadHref } from "../lib/roads";
 import { breadcrumbs, roadDescription, roadTitle } from "../lib/seo";
 
-// Without `row`: the client-only page /drum/?r=KEY (kept for old links; not indexed).
-// With `row`: a prerendered page /drum/KEY/ with the basics in the HTML, filled in by the script.
+// Without `row`: the client-only page /ut/?r=KEY (roads without a static page; not indexed).
+// With `row`: a prerendered page /ut/KEY/ with the basics in the HTML, filled in by the script.
 interface Props { lang: Lang; row?: IndexRow; others?: IndexRow[] }
 const { lang, row, others = [] } = Astro.props;
 const s = strings[lang];
 const S = s as Record<string, string>;
-const other: Lang = lang === "ro" ? "en" : "ro";
+const other: Lang = lang === "hu" ? "en" : "hu";
 
 // "Report a mistake": a mailto with the road in the subject (outside <main>, which the script re-renders).
 const reportHref = (ref: string) =>
@@ -25,10 +25,10 @@ if (row) {
   seo = {
     title: roadTitle(row, lang),
     description: roadDescription(row, lang),
-    alternates: { ro: alt("ro"), en: alt("en") },
+    alternates: { hu: alt("hu"), en: alt("en") },
     switchHref: roadHref(routes[other].road, other, key, cat),
     jsonLd: [breadcrumbs([
-      { name: "Bornă", path: routes[lang].map },
+      { name: "Szelvény", path: routes[lang].map },
       ...(county ? [{ name: countyName(county), path: `${routes[lang].map}?q=${encodeURIComponent(countyName(county))}` }] : []),
       { name: ref, path: `${routes[lang].road}${encodeURIComponent(key)}/` },
     ])],

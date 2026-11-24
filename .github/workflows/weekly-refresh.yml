@@ -1,11 +1,11 @@
-# Weekly refresh (ROADMAP Phase 4.1): rebuild the network from fresh public data, check it,
+# Weekly refresh (ROADMAP Phase 5): rebuild the network from fresh data, check it,
 # publish to R2 only if every check passes, and open an issue with the weekly note
 # (GitHub emails it to the repo owner).
 name: Weekly refresh
 
 on:
   schedule:
-    - cron: "0 3 * * 1"   # Mondays 03:00 UTC (05:00 or 06:00 in Romania)
+    - cron: "0 3 * * 1"   # Mondays 03:00 UTC (04:00 or 05:00 in Hungary)
   workflow_dispatch:
 
 permissions:
@@ -25,14 +25,14 @@ jobs:
         shell: bash -el {0}   # login shell, so the micromamba tools are on PATH
     env:
       # Overture is not used after import (only for exploration), so the weekly run skips it.
-      SOURCES: osm gisco ins_trn139a aadt_end   # what `make import` loads (HG 540 is read by `make register`)
+      SOURCES: osm gisco   # what `make import` loads
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: mamba-org/setup-micromamba@v2
         with:
-          environment-name: borna
+          environment-name: szelveny
           create-args: python=3.12 osm2pgsql>=2 gdal libgdal-pg tippecanoe rclone   # libgdal-pg: ogr2ogr → PostGIS
           cache-environment: true
 
@@ -45,8 +45,8 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: |
-          # When a server refuses CI (legislatie.just.ro always, Geofabrik at times), use the copy
-          # in the private bucket (saved weekly by the owner's Mac, `make fetch-install`) and say so.
+          # When a server refuses CI (Geofabrik at times), use the copy in the private bucket
+          # (saved weekly by the owner's Mac, `make fetch-install`) and say so.
           mkdir -p data/out/refresh
           # Geofabrik refuses some CI machines: try twice, then use the copy the owner's Mac saved
           # this week (scripts/weekly-fetch.sh); the note says which OSM date was used.
@@ -61,14 +61,13 @@ jobs:
               fi
             fi
           fi
-          for s in hg540 gisco ins_trn139a aadt_end; do
+          for s in gisco; do
             timeout 600 make download SOURCES=$s || { make restore-raw S=$s && echo $s >> data/out/refresh/fallbacks; }
           done
           make import
 
       - name: Build the network
         run: |
-          make register
           # Accuracy first: a pass that keeps every 5th milestone out of calibration and measures
           # the error at them (holdout.json → accuracy.json); then the full build that is published.
           make lrs ARGS=--holdout
@@ -101,7 +100,7 @@ jobs:
             published) title="Weekly refresh $day: published" ;;
             held)      title="Weekly refresh $day: held back" ;;
             *)         title="Weekly refresh $day: failed"
-                       { printf '**Failed**: the run stopped before it could finish, so nothing on bornakm.ro changed.\n\n'
+                       { printf '**Failed**: the run stopped before it could finish, so nothing on szelveny.hu changed.\n\n'
                          [ -f data/out/refresh/unreachable ] && { cat data/out/refresh/unreachable; echo "Next Monday's run will try again; no action needed unless it keeps happening."; echo; }
                          printf '[Run log](%s)\n' "$RUN_URL"; } > note.md ;;
           esac

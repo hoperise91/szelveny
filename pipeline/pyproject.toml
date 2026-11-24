@@ -1,15 +1,13 @@
 [project]
-name = "borna"
+name = "szelveny"
 version = "0.0.1"
-description = "Bornă data pipeline: public Romanian road data -> linear-referenced network"
+description = "Szelvény data pipeline: Hungarian road data (NAP, OSM) -> linear-referenced network"
 requires-python = ">=3.12"
 license = "MIT"
 dependencies = [
   "geopandas>=1.0",
   "shapely>=2.0",
   "pyproj>=3.6",
-  "pdfplumber>=0.11",
-  "lxml>=5.0",
   "networkx>=3.3",
   "psycopg[binary]>=3.2",
   "sqlalchemy>=2.0",
@@ -23,7 +21,7 @@ dependencies = [
 dev = ["pytest>=8", "ruff>=0.6"]
 
 [tool.setuptools]
-packages = ["borna"]
+packages = ["szelveny"]
 
 [tool.ruff]
 line-length = 100

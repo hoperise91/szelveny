@@ -5,7 +5,7 @@ import type { IndexRow } from "./roads";
 
 const REMOTE = (() => {
   const u = (import.meta.env.PUBLIC_DATA_URL ?? "").replace(/\/$/, "");
-  return u.startsWith("http") ? u : "https://data.bornakm.ro";
+  return u.startsWith("http") ? u : "https://data.szelveny.hu";
 })();
 
 let cached: Promise<IndexRow[]> | null = null;
@@ -21,7 +21,7 @@ export function loadIndex(): Promise<IndexRow[]> {
       return (await r.json()) as IndexRow[];
     } catch (e) {
       // Don't break the deploy, but say loudly that road pages are missing.
-      console.warn(`[borna] WARNING: road index not found (${REMOTE}/index.json: ${e}). No road pages built.`);
+      console.warn(`[szelveny] WARNING: road index not found (${REMOTE}/index.json: ${e}). No road pages built.`);
       return [];
     }
   })();

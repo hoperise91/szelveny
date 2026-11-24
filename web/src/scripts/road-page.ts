@@ -4,7 +4,7 @@ import type { LngLatLike } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { countyName } from "../lib/counties";
-import { MAPLIBRE_RO, type Strings } from "../lib/i18n";
+import { MAPLIBRE_HU, type Strings } from "../lib/i18n";
 import {
   CATEGORY_COLOR, type Quality, type Road, type Source, fetchRoad, fetchSources,
   formatKm, formatLength, hasStaticPage, parseQuery, qualityShares,
@@ -17,17 +17,17 @@ const ATTR_ORDER = ["surface", "lanes", "maxspeed", "aadt", "width", "bridge", "
 
 export async function initRoadPage(root: HTMLElement) {
   // Precision details are for the maintainer only (?detalii=1 on the map turns them on).
-  const details = (() => { try { return localStorage.getItem("borna.details") === "1"; } catch { return false; } })();
+  const details = (() => { try { return localStorage.getItem("szelveny.details") === "1"; } catch { return false; } })();
   const s: Strings = JSON.parse(root.dataset.strings!);
   const lang = root.dataset.lang!;
   const mapUrl = root.dataset.mapUrl!;
   const S = s as Record<string, string>;
   const roadUrl = root.dataset.roadUrl!;
-  const prerendered = !!root.dataset.key; // /drum/KEY/: the basics are already in the HTML
+  const prerendered = !!root.dataset.key; // /ut/KEY/: the basics are already in the HTML
   const key = root.dataset.key || new URLSearchParams(location.search).get("r");
-  // Old links (/drum/?r=KEY) move to the road's own page, which search engines index.
+  // Client links (/ut/?r=KEY) move to the road's own page, which search engines index.
   const staticUrl = (k: string) => `${roadUrl}${encodeURIComponent(k)}/`;
-  if (!prerendered && key && lang === "ro") { location.replace(staticUrl(key)); return; }
+  if (!prerendered && key && lang === "hu") { location.replace(staticUrl(key)); return; }
 
   let road: Road;
   let sources: Source[] = [];
@@ -41,12 +41,11 @@ export async function initRoadPage(root: HTMLElement) {
   }
   if (!prerendered && hasStaticPage(lang, road.category)) { location.replace(staticUrl(road.key)); return; }
   const src = new Map(sources.map((x) => [x.id, x]));
-  if (!prerendered) document.title = `${road.ref}${road.county ? ` (${countyName(road.county)})` : ""} · Bornă`;
+  if (!prerendered) document.title = `${road.ref}${road.county ? ` (${countyName(road.county)})` : ""} · Szelvény`;
 
   const onMap = road.segments.length > 0;
   const shares = qualityShares(road);
   const statusText = S[`status_${road.lrs.status ?? "no_geometry"}`] ?? "";
-  const hg = src.get("hg540");
 
   root.innerHTML = `
     <p class="small"><a href="${mapUrl}?r=${encodeURIComponent(road.key)}">← ${esc(s.open_on_map)}</a></p>
@@ -56,8 +55,7 @@ export async function initRoadPage(root: HTMLElement) {
         <div class="muted">${esc(road.county ? countyName(road.county) : s.national_road)}</div></div>
     </div>
     <p class="rp-route">${esc(road.route ?? "")}</p>
-    ${road.lrs.status === "osm_only" ? `<p class="rp-note" style="margin:-12px 0 18px">${esc(s.not_in_register_note)}</p>` : ""}
-    ${road.now_national ? `<p class="rp-note" style="margin:-12px 0 18px">${esc(s.now_national_note.replace("{ref}", road.now_national))}</p>` : ""}
+    ${road.lrs.status === "osm_only" ? `<p class="rp-note" style="margin:-12px 0 18px">${esc(s.osm_only_note)}</p>` : ""}
 
     <div class="rp-grid">
       <div class="rp-map" id="rp-map">${onMap ? "" : `<p class="msg" style="padding:16px">${esc(s.not_on_map)}</p>`}</div>
@@ -66,10 +64,10 @@ export async function initRoadPage(root: HTMLElement) {
           <dt>${esc(s.official_length)}</dt><dd>${formatLength(road.length_official, lang)}</dd>
           <dt>${esc(s.official_km)}</dt><dd class="mono">${formatKm(road.km_from)} – ${formatKm(road.km_to)}</dd>
           ${details ? `<dt>${esc(s.on_map)}</dt><dd>${onMap ? `${formatLength(road.lrs.path_km, lang)}<br><span class="small muted">${esc(statusText)}</span>` : esc(s.not_on_map)}</dd>` : ""}
-          ${onMap && details ? `<dt>${esc(s.km_quality)}</dt><dd>${(["calibrated", "interpolated", "estimated"] as Quality[])
+          ${onMap && details ? `<dt>${esc(s.km_quality)}</dt><dd>${(["official", "calibrated", "interpolated", "estimated"] as Quality[])
             .filter((q) => shares[q] > 0.005)
             .map((q) => `<span class="q" data-q="${q}">${Math.round(shares[q] * 100)}% ${esc(S[`q_${q}`])}</span>`).join("<br>")}</dd>` : ""}
-          <dt>${esc(s.legal_source)}</dt><dd class="small">${esc(road.legal_source ?? (road.lrs.status === "osm_only" ? "—" : ""))}${hg?.url ? ` · <a href="${esc(hg.url)}" rel="noopener">legislatie.just.ro</a>` : ""}</dd>
+          ${road.through?.length ? `<dt>${esc(s.through)}</dt><dd>${road.through.map((c) => esc(countyName(c))).join(", ")}</dd>` : ""}
         </dl>
         ${onMap ? `<form class="rp-goto" id="rp-goto"><input inputmode="decimal" aria-label="${esc(s.go_to_km)}"
           placeholder="${esc(s.go_to_km)}, ${formatKm(((road.km_from ?? 0) + (road.km_to ?? 0)) / 2)}"/>
@@ -80,13 +78,6 @@ export async function initRoadPage(root: HTMLElement) {
     ${onMap ? `<h2>${esc(s.strip_title)}</h2>
       <div class="card rp-strip"><div id="rp-strip"></div></div>
       <p class="rp-note">${esc(s.strip_note)}</p>` : ""}
-
-    ${road.counties?.length ? `<h2>${esc(s.by_county)}</h2>
-      <div class="table-wrap"><table><thead><tr><th>${esc(s.county)}</th><th class="num">${esc(s.km_from)}</th>
-        <th class="num">${esc(s.km_to)}</th><th class="num">${esc(s.length)}</th></tr></thead><tbody>
-      ${road.counties.map(([c, f, t, l]) => `<tr><td>${esc(countyName(c))}</td><td class="num">${formatKm(f)}</td>
-        <td class="num">${formatKm(t)}</td><td class="num">${l == null ? "–" : l.toFixed(3)}</td></tr>`).join("")}
-      </tbody></table></div>` : ""}
 
     ${Object.keys(road.attributes).length ? `<h2>${esc(s.details_all)}</h2>
       ${ATTR_ORDER.filter((t) => road.attributes[t]?.length).map((t) => {
@@ -113,12 +104,12 @@ export async function initRoadPage(root: HTMLElement) {
 
   maplibregl.setWorkerUrl(workerUrl);
   const map = new maplibregl.Map({
-    locale: lang === "ro" ? MAPLIBRE_RO : undefined,
+    locale: lang === "hu" ? MAPLIBRE_HU : undefined,
     container: root.querySelector<HTMLElement>("#rp-map")!,
     style: BASEMAP,
     bounds: road.bbox ? [[road.bbox[0], road.bbox[1]], [road.bbox[2], road.bbox[3]]] : undefined,
     fitBoundsOptions: { padding: 30 },
-    attributionControl: { compact: true, customAttribution: "© OpenStreetMap contributors (ODbL) · Bornă" },
+    attributionControl: { compact: true, customAttribution: "© OpenStreetMap contributors (ODbL) · Szelvény" },
     cooperativeGestures: true,
   });
   map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), "top-right");

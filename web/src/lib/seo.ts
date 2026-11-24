@@ -1,9 +1,11 @@
 // Titles, descriptions and JSON-LD for prerendered pages. Pure functions (no I/O).
 import { countyName } from "./counties";
-import { AUTHOR, CONTACT_EMAIL, strings, type Lang } from "./i18n";
+import { AUTHOR, CONTACT_EMAIL, routes, strings, type Lang } from "./i18n";
 import type { IndexRow } from "./roads";
 
-export const SITE = "https://bornakm.ro";
+export const SITE = "https://szelveny.hu";
+/** Credit line for NAP data (ÁSZF §32; always shown, though attribution isn't required). */
+export const NAP_CREDIT = "Forrás: Magyar Közút Nonprofit Zrt. – Nemzeti Adathozzáférési Pont (NAP)";
 const abs = (p: string) => new URL(p, SITE).href;
 
 const clean = (s: string | null | undefined) => (s ?? "").replace(/\s+/g, " ").trim();
@@ -19,7 +21,7 @@ export function clip(s: string, max: number): string {
 const catName = (lang: Lang, cat: string) =>
   (strings[lang] as Record<string, string>)[`cat_${cat}`] ?? cat;
 
-/** "DJ121 Covasna · Sfântu Gheorghe – …" (Base adds " · Bornă"; keep it under ~60). */
+/** "M1 · Budapest – Hegyeshalom" (Base adds " · Szelvény"; keep it under ~60). */
 export function roadTitle(row: IndexRow, lang: Lang): string {
   const [, ref, county, cat, route] = row;
   const head = county ? `${ref} ${countyName(county)}` : ref;
@@ -30,7 +32,7 @@ export function roadTitle(row: IndexRow, lang: Lang): string {
 export function roadDescription(row: IndexRow, lang: Lang): string {
   const [, ref, county, cat, route, , , through] = row;
   const s = strings[lang];
-  const name = lang === "ro" ? `${catName(lang, cat)} ${ref}` : `${ref} (${catName(lang, cat).toLowerCase()})`;
+  const name = `${ref} (${catName(lang, cat).toLowerCase()})`;
   const where = county ? ` ${s.meta_road_in_county} ${countyName(county)}${lang === "en" ? " county" : ""}` : "";
   const r = clean(route);
   const crosses = !county && through?.length
@@ -44,7 +46,7 @@ export const organization = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": abs("/#org"),
-  name: "Bornă",
+  name: "Szelvény",
   url: abs("/"),
   logo: abs("/apple-touch-icon.png"),
   email: CONTACT_EMAIL,
@@ -57,14 +59,14 @@ export function website(lang: Lang) {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": abs(`${base}#website`),
-    name: "Bornă",
+    name: "Szelvény",
     alternateName: strings[lang].tagline,
     url: abs(base),
-    inLanguage: lang === "ro" ? "ro-RO" : "en",
+    inLanguage: lang === "hu" ? "hu-HU" : "en",
     publisher: { "@id": abs("/#org") },
     potentialAction: {
       "@type": "SearchAction",
-      target: { "@type": "EntryPoint", urlTemplate: abs(`${base}?q={search_term_string}`) },
+      target: { "@type": "EntryPoint", urlTemplate: abs(`${routes[lang].search}?q={search_term_string}`) },
       "query-input": "required name=search_term_string",
     },
   };
@@ -95,9 +97,9 @@ export function dataset(d: {
     isAccessibleForFree: true,
     creator: { "@id": abs("/#org") },
     publisher: organization,
-    spatialCoverage: { "@type": "Place", name: "România" },
+    spatialCoverage: { "@type": "Place", name: "Magyarország" },
     ...(d.dateModified && { dateModified: d.dateModified }),
-    keywords: ["drumuri", "rețea rutieră", "România", "Romania roads", "HG 540/2000", "OpenStreetMap", "GIS"],
+    keywords: ["közút", "úthálózat", "szelvény", "Magyarország", "Hungary roads", "NAP", "OpenStreetMap", "GIS"],
     distribution: d.files.map((f) => ({ "@type": "DataDownload", encodingFormat: f.format, contentUrl: f.url })),
   };
 }

@@ -6,7 +6,7 @@ import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { FeatureCollection } from "geojson";
 import { Protocol } from "pmtiles";
 import { countiesSorted, countyName } from "../lib/counties";
-import { MAPLIBRE_RO, type Strings } from "../lib/i18n";
+import { MAPLIBRE_HU, type Strings } from "../lib/i18n";
 import {
   CATEGORY_COLOR, CATEGORY_ORDER, DATA_URL, QUALITY_COLOR, SURFACE_COLOR, type IndexRow,
   type LonLat, type Quality, type Road, fetchIndex, fetchRoad, fold, formatKm, formatLength,
@@ -14,13 +14,14 @@ import {
   roadHref,
 } from "../lib/roads";
 import { liveStrip, stripBands } from "../lib/strip";
+import { NAP_CREDIT } from "../lib/seo";
 import {
   COLOUR_MODES, DATA_GROUPS, DATA_TYPES, DEFAULT_DATA, OBJECT_COLOR, type DataId, type Mode,
 } from "../lib/datatypes";
 
 const OFM = "https://tiles.openfreemap.org/styles/";
 const GLYPHS = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf"; // for road labels on raster maps
-const ROAD_TYPES = ["A", "DX", "DN", "V", "DJ", "DC", "DP"];
+const ROAD_TYPES = CATEGORY_ORDER;
 
 // Background maps: free, no keys. Raster ones get a minimal style.
 const MAPTILER_KEY: string | undefined = import.meta.env.PUBLIC_MAPTILER_KEY;
@@ -62,15 +63,16 @@ function basemapStyle(id: string): string | maplibregl.StyleSpecification {
   const b = BASEMAPS.find((x) => x.id === id) ?? BASEMAPS[0];
   return typeof b.style === "string" ? b.style : b.style();
 }
-const RO_BOUNDS: [[number, number], [number, number]] = [[20.2, 43.6], [29.75, 48.3]];
+const HU_BOUNDS: [[number, number], [number, number]] = [[16.1, 45.7], [22.95, 48.6]];
 
-// Administrator by road category (OG 43/1997): national roads -> the state (CNAIR), county
-// roads -> county council, communal roads -> local council, DP -> private owner.
-export const OWNER_OF: Record<string, string> = { A: "state", DX: "state", DN: "state", V: "state", DJ: "county", DC: "commune", DP: "private" };
-export const OWNER_COLOR: Record<string, string> = { state: "#7b2cbf", county: "#f28c28", commune: "#2a9d8f", private: "#6b6b6b" };
+// Administrator by road category: national roads -> the state (Magyar Közút, or a motorway
+// concession company on some M roads), local roads -> the municipality (önkormányzat).
+// NAP's "Közút neve, kategóriája és kezelője" package gives the actual administrator (Phase 3).
+export const OWNER_OF: Record<string, string> = { M: "state", F: "state", OK: "state", BK: "state", local: "local" };
+export const OWNER_COLOR: Record<string, string> = { state: "#7b2cbf", local: "#2a9d8f" };
 // Carriageway width classes (m), NVDB-style; estimated width = lanes x a standard lane width.
 const WIDTH_STEPS: [number, string][] = [[0, "#d7191c"], [5, "#fdae61"], [6, "#fee08b"], [7, "#a6d96a"], [9, "#2c7bb6"], [12, "#253494"]];
-const LANE_WIDTH: ExpressionSpecification = ["match", ["get", "t"], ["A", "DX", "DN", "V"], 3.5, 3.0];
+const LANE_WIDTH: ExpressionSpecification = ["match", ["get", "t"], ["M", "F"], 3.5, 3.0];
 
 const esc = (v: unknown) => String(v ?? "").replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 const shield = (ref: string, cat: string, lg = false) =>
@@ -110,24 +112,23 @@ export function initMap(root: HTMLElement) {
   const stored = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
   const store = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } };
 
-  let basemap = BASEMAPS.find((b) => b.id === stored("borna.basemap"))?.id ?? "light";
-  // v2: expressways (DX) added; older saved choices didn't know them
-  let visibleCats = new Set<string>(JSON.parse(stored("borna.cats.v2") ?? "null") ?? ROAD_TYPES);
+  let basemap = BASEMAPS.find((b) => b.id === stored("szelveny.basemap"))?.id ?? "light";
+  let visibleCats = new Set<string>(JSON.parse(stored("szelveny.cats") ?? "null") ?? ROAD_TYPES);
   type FC = FeatureCollection;
   let selData: FC = { type: "FeatureCollection", features: [] };
 
   const map = new maplibregl.Map({
-    locale: lang === "ro" ? MAPLIBRE_RO : undefined,
+    locale: lang === "hu" ? MAPLIBRE_HU : undefined,
     container: root.querySelector<HTMLElement>("#map")!,
     style: basemapStyle(basemap),
-    bounds: RO_BOUNDS,
+    bounds: HU_BOUNDS,
     fitBoundsOptions: { padding: 24 },
     attributionControl: {
       compact: true,
-      customAttribution: "© OpenStreetMap contributors (ODbL) · HG 540/2000 · INS · data.gov.ro · Bornă",
+      customAttribution: "© OpenStreetMap contributors (ODbL) · Szelvény",
     },
   });
-  if (import.meta.env.DEV) (window as unknown as { bornaMap: unknown }).bornaMap = map; // for testing
+  if (import.meta.env.DEV) (window as unknown as { szelvenyMap: unknown }).szelvenyMap = map; // for testing
   map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), "top-right");
   map.addControl(new maplibregl.GeolocateControl({ trackUserLocation: false }), "top-right");
 
@@ -163,11 +164,11 @@ export function initMap(root: HTMLElement) {
     legendHead.setAttribute("aria-expanded", String(open));
   }
   // Folded by default on phones, open on larger screens; the visitor's choice is remembered.
-  setLegend((stored("borna.legend") ?? (phone.matches ? "folded" : "open")) === "open");
+  setLegend((stored("szelveny.legend") ?? (phone.matches ? "folded" : "open")) === "open");
   legendHead.addEventListener("click", () => {
     const open = legendBox.classList.contains("folded");
     setLegend(open);
-    store("borna.legend", open ? "open" : "folded");
+    store("szelveny.legend", open ? "open" : "folded");
   });
   map.addControl(layersControl(), "top-right");
   map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-right");
@@ -179,9 +180,9 @@ export function initMap(root: HTMLElement) {
   // Line width by category and zoom, times k plus `add` px (zoom must stay the top-level input).
   const width = (k = 1, add = 0): ExpressionSpecification => [
     "interpolate", ["exponential", 1.6], ["zoom"],
-    5, ["+", add, ["*", k, ["match", ["get", "t"], ["A", "DX"], 2.2, "DN", 1.6, "V", 1.1, "DJ", 0.8, 0.6]]],
-    10, ["+", add, ["*", k, ["match", ["get", "t"], ["A", "DX"], 4, "DN", 3.2, "V", 2.6, "DJ", 2.2, 1.4]]],
-    14, ["+", add, ["*", k, ["match", ["get", "t"], ["A", "DX"], 8, "DN", 6.5, "V", 5, "DJ", 4.5, 3]]],
+    5, ["+", add, ["*", k, ["match", ["get", "t"], "M", 2.2, "F", 1.6, "OK", 0.8, 0.6]]],
+    10, ["+", add, ["*", k, ["match", ["get", "t"], "M", 4, "F", 3.2, "OK", 2.2, 1.4]]],
+    14, ["+", add, ["*", k, ["match", ["get", "t"], "M", 8, "F", 6.5, "OK", 4.5, 3]]],
   ];
   const catColor: ExpressionSpecification = [
     "match", ["get", "t"], ...Object.entries(CATEGORY_COLOR).flat(), "#7c7c7c",
@@ -191,84 +192,83 @@ export function initMap(root: HTMLElement) {
   ] as unknown as ExpressionSpecification;
   const typeFilter = (): ExpressionSpecification => ["in", ["get", "t"], ["literal", [...visibleCats]]];
   const ownerColor = ["match", ["get", "t"],
-    ["A", "DX", "DN", "V"], OWNER_COLOR.state, "DJ", OWNER_COLOR.county, "DC", OWNER_COLOR.commune,
-    OWNER_COLOR.private] as unknown as ExpressionSpecification;
+    ["M", "F", "OK", "BK"], OWNER_COLOR.state, OWNER_COLOR.local] as unknown as ExpressionSpecification;
   const widthColor = (metres: ExpressionSpecification): ExpressionSpecification =>
     ["step", metres, WIDTH_STEPS[0][1], ...WIDTH_STEPS.slice(1).flat()] as unknown as ExpressionSpecification;
-  // Labels by zoom: motorways first, then national, county, communal roads.
+  // Labels by zoom: motorways first, then main roads, összekötő, bekötő and local roads.
   const labelFilter = (): ExpressionSpecification => {
     const tf = typeFilter();
     const only = (cats: string[]): ExpressionSpecification => ["all", tf, ["in", ["get", "t"], ["literal", cats]]];
-    return ["step", ["zoom"], only(["A", "DX"]), 6, only(["A", "DX", "DN"]), 8,
-      only(["A", "DX", "DN", "V", "DJ"]), 11, tf] as unknown as ExpressionSpecification;
+    return ["step", ["zoom"], only(["M"]), 6, only(["M", "F"]), 8,
+      only(["M", "F", "OK"]), 11, tf] as unknown as ExpressionSpecification;
   };
-  let showLabels = stored("borna.labels") !== "0";
-  let showConstruction = stored("borna.construction") !== "0";
+  let showLabels = stored("szelveny.labels") !== "0";
+  let showConstruction = stored("szelveny.construction") !== "0";
   // Precision details (km quality, reference points, mapped length) are for the maintainer only:
   // ?detalii=1 turns them on in this browser (remembered), ?detalii=0 off.
   const detailsParam = new URLSearchParams(location.search).get("detalii");
-  if (detailsParam != null) store("borna.details", detailsParam === "1" ? "1" : "0");
-  const details = stored("borna.details") === "1";
+  if (detailsParam != null) store("szelveny.details", detailsParam === "1" ? "1" : "0");
+  const details = stored("szelveny.details") === "1";
   // Data types shown in the road panel (ticked in the data list).
   // v2: E-roads and point objects added; older saved choices didn't know them
-  let shownData = new Set<DataId>(JSON.parse(stored("borna.data.v2") ?? "null") ?? DEFAULT_DATA);
+  let shownData = new Set<DataId>(JSON.parse(stored("szelveny.data.v2") ?? "null") ?? DEFAULT_DATA);
   // Source versions, for "source · date" next to each value.
   const sourceVersion: Record<string, string> = {};
   fetchSources().then((list) => list.forEach((x) => { sourceVersion[x.id] = x.version; })).catch(() => {});
   let hoverKey = "";
   const ROAD_LAYERS = ["roads-casing", "roads", "surface", "maxspeed", "aadt", "lanes", "width", "construction"];
 
-  // Bornă's sources and layers. Runs on every style load: switching the basemap replaces the
+  // Szelvény's sources and layers. Runs on every style load: switching the basemap replaces the
   // style, so the overlays (and the current mode, road types and selection) are added again.
   function addOverlays() {
-    if (map.getSource("borna")) return;
+    if (map.getSource("szelveny")) return;
     // Below the basemap's labels but above all its lines and fills: the first symbol layer
     // after the last non-symbol layer (some styles put a few labels early).
     const layers = map.getStyle().layers;
     const lastShape = layers.map((l) => l.type !== "symbol").lastIndexOf(true);
     const before = layers.slice(lastShape + 1).find((l) => l.type === "symbol")?.id;
-    map.addSource("borna", {
+    map.addSource("szelveny", {
       type: "vector",
-      url: `pmtiles://${new URL(`${DATA_URL}/borna.pmtiles`, location.href).href}`,
+      url: `pmtiles://${new URL(`${DATA_URL}/szelveny.pmtiles`, location.href).href}`,
     });
     map.addSource("sel", { type: "geojson", data: selData });
     const line = { "line-join": "round", "line-cap": "round" } as const;
     const dark = darkBackground();
 
-    map.addLayer({ id: "roads-casing", type: "line", source: "borna", "source-layer": "roads", layout: line,
+    map.addLayer({ id: "roads-casing", type: "line", source: "szelveny", "source-layer": "roads", layout: line,
       paint: { "line-color": dark ? "#111111" : "#ffffff", "line-width": width(1, 2), "line-opacity": dark ? 0.6 : 0.85 } }, before);
-    map.addLayer({ id: "road-hover", type: "line", source: "borna", "source-layer": "roads", layout: line,
+    map.addLayer({ id: "road-hover", type: "line", source: "szelveny", "source-layer": "roads", layout: line,
       filter: ["==", ["get", "k"], ""],
       paint: { "line-color": dark ? "#ffffff" : "#1d1c1a", "line-opacity": 0.3, "line-width": width(1, 7) } }, before);
     map.addLayer({ id: "sel-halo", type: "line", source: "sel", layout: line,
       paint: { "line-color": "#ffcf33", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 9, 14, 18],
         "line-opacity": 0.9, "line-blur": 1 } }, before);
-    map.addLayer({ id: "roads", type: "line", source: "borna", "source-layer": "roads", layout: line,
+    map.addLayer({ id: "roads", type: "line", source: "szelveny", "source-layer": "roads", layout: line,
       paint: { "line-color": catColor, "line-width": width() } }, before);
     // Motorways, expressways and national roads under construction: dashed, in their colour.
-    map.addLayer({ id: "construction", type: "line", source: "borna", "source-layer": "construction",
+    map.addLayer({ id: "construction", type: "line", source: "szelveny", "source-layer": "construction",
       layout: { "line-join": "round", visibility: showConstruction ? "visible" : "none" },
       paint: { "line-color": catColor, "line-width": width(0.85), "line-opacity": 0.7,
         "line-dasharray": [2, 2] } }, before);
-    map.addLayer({ id: "surface", type: "line", source: "borna", "source-layer": "surface", layout: { ...line, visibility: "none" },
+    map.addLayer({ id: "surface", type: "line", source: "szelveny", "source-layer": "surface", layout: { ...line, visibility: "none" },
       paint: { "line-width": width(1.15), "line-color": [
         "match", ["get", "v"], ...Object.entries(SURFACE_COLOR).flat(), "#a3a3a3"] as unknown as ExpressionSpecification } }, before);
-    map.addLayer({ id: "maxspeed", type: "line", source: "borna", "source-layer": "maxspeed", layout: { ...line, visibility: "none" },
+    map.addLayer({ id: "maxspeed", type: "line", source: "szelveny", "source-layer": "maxspeed", layout: { ...line, visibility: "none" },
       paint: { "line-width": width(1.15), "line-color": [
         "case", [">", ["to-number", ["get", "v"], 0], 0],
         ["step", ["to-number", ["get", "v"], 0], "#b2182b", 31, "#ef8a62", 51, "#f4c95d", 71, "#7fbf7b", 91, "#2c9c5a", 111, "#00563b"],
         "#a3a3a3"] } }, before);
-    map.addLayer({ id: "aadt", type: "line", source: "borna", "source-layer": "aadt", layout: { ...line, visibility: "none" },
+    map.addLayer({ id: "aadt", type: "line", source: "szelveny", "source-layer": "aadt", layout: { ...line, visibility: "none" },
       paint: {
         "line-color": ["step", ["get", "v"], "#cbc9e2", 10000, "#9e9ac8", 20000, "#6a51a3", 40000, "#3f007d"],
         "line-width": ["interpolate", ["linear"], ["zoom"],
           5, ["interpolate", ["linear"], ["get", "v"], 3000, 1.5, 20000, 3.5, 75000, 8],
           12, ["interpolate", ["linear"], ["get", "v"], 3000, 4, 20000, 8, 75000, 16]],
       } }, before);
-    map.addLayer({ id: "lanes", type: "line", source: "borna", "source-layer": "lanes", layout: { ...line, visibility: "none" },
+    map.addLayer({ id: "lanes", type: "line", source: "szelveny", "source-layer": "lanes", layout: { ...line, visibility: "none" },
       paint: { "line-width": width(1.1), "line-opacity": 0.75,
         "line-color": widthColor(["*", ["to-number", ["get", "v"], 0], LANE_WIDTH]) } }, before);
-    map.addLayer({ id: "width", type: "line", source: "borna", "source-layer": "width", layout: { ...line, visibility: "none" },
+    map.addLayer({ id: "width", type: "line", source: "szelveny", "source-layer": "width", layout: { ...line, visibility: "none" },
       paint: { "line-width": width(1.5, 1), "line-color": widthColor(["to-number", ["get", "v"], 0]) } }, before);
     map.addLayer({ id: "sel-line", type: "line", source: "sel", layout: line,
       paint: { "line-color": ["get", "color"], "line-width": ["interpolate", ["linear"], ["zoom"], 5, 3, 14, 8] } }, before);
@@ -276,12 +276,12 @@ export function initMap(root: HTMLElement) {
       if (!map.hasImage(`shield-${c}`)) map.addImage(`shield-${c}`, shieldImage(CATEGORY_COLOR[c]),
         { pixelRatio: 2, stretchX: [[10, 38]], stretchY: [[10, 30]], content: [6, 5, 42, 35] });
     }
-    map.addLayer({ id: "road-labels", type: "symbol", source: "borna", "source-layer": "roads",
+    map.addLayer({ id: "road-labels", type: "symbol", source: "szelveny", "source-layer": "roads",
       filter: labelFilter(),
       layout: {
         visibility: showLabels ? "visible" : "none",
         "symbol-placement": "line", "symbol-spacing": 320,
-        "symbol-sort-key": ["match", ["get", "t"], ["A", "DX"], 0, "DN", 1, "V", 2, "DJ", 3, "DC", 4, 5],
+        "symbol-sort-key": ["match", ["get", "t"], "M", 0, "F", 1, "OK", 2, "BK", 3, 4],
         "text-field": ["get", "r"], "text-font": ["Noto Sans Bold"],
         "text-size": ["interpolate", ["linear"], ["zoom"], 6, 10, 12, 12],
         "text-rotation-alignment": "viewport", "icon-rotation-alignment": "viewport",
@@ -290,11 +290,11 @@ export function initMap(root: HTMLElement) {
       },
       paint: { "text-color": "#ffffff" } });
     // Ferry crossings: dashed lines over water, shown with the ferry terminals.
-    if (!map.getLayer("ferries")) map.addLayer({ id: "ferries", type: "line", source: "borna", "source-layer": "ferries",
+    if (!map.getLayer("ferries")) map.addLayer({ id: "ferries", type: "line", source: "szelveny", "source-layer": "ferries",
       layout: { "line-join": "round", visibility: shownData.has("obj_ferry") ? "visible" : "none" },
       paint: { "line-color": OBJECT_COLOR.ferry, "line-width": 2, "line-dasharray": [2, 1.5] } });
     // Point objects (level crossings, interchanges, borders, tolls): dots, ticked in the data list.
-    map.addLayer({ id: "objects", type: "circle", source: "borna", "source-layer": "objects",
+    map.addLayer({ id: "objects", type: "circle", source: "szelveny", "source-layer": "objects",
       paint: {
         "circle-color": ["match", ["get", "y"], ...Object.entries(OBJECT_COLOR).flat(), "#666"] as unknown as ExpressionSpecification,
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 3, 12, 5, 15, 7],
@@ -312,7 +312,7 @@ export function initMap(root: HTMLElement) {
     if (map.getLayer("ferries")) map.setLayoutProperty("ferries", "visibility", types.includes("ferry") ? "visible" : "none");
   }
 
-  // "Nod rutier 5 · Bărcănești", "Punct de trecere a frontierei · Borș"
+  // "Csomópont 12 · Biatorbágy", "Határátkelő · Hegyeshalom"
   function objectLabel(type: string, name?: string | null, ref?: string | null): string {
     return [T[`one_${type}`] ?? type, [ref, name].filter(Boolean).join(" ")].filter(Boolean).join(" · ");
   }
@@ -432,11 +432,10 @@ export function initMap(root: HTMLElement) {
   // is on the map anyway (owner's choice). Values come from the tiles' attribute layers.
   function hoverValue(pt: maplibregl.Point, t: string): string | null {
     const T = s as Record<string, string>;
-    const locale = lang === "ro" ? "ro-RO" : "en-GB";
+    const locale = lang === "hu" ? "hu-HU" : "en-GB";
     const num = (x: number, d = 1) => x.toLocaleString(locale, { maximumFractionDigits: d });
     if (mode === "category") return cat(t);
-    if (mode === "owner") return T[`owner_${["A", "DX", "DN", "V"].includes(t) ? "state"
-      : t === "DJ" ? "county" : t === "DC" ? "commune" : "private"}`];
+    if (mode === "owner") return T[`owner_${OWNER_OF[t] ?? "local"}`];
     const box: [maplibregl.PointLike, maplibregl.PointLike] = [[pt.x - 4, pt.y - 4], [pt.x + 4, pt.y + 4]];
     const at = (layer: string) => map.getLayer(layer)
       ? map.queryRenderedFeatures(box, { layers: [layer] })[0]?.properties.v : undefined;
@@ -446,8 +445,8 @@ export function initMap(root: HTMLElement) {
     if (mode === "width") {
       const w = at("width");
       if (w != null) return `${num(Number(w))} m`;
-      const l = at("lanes");  // estimate: lanes × 3.5 m (A, DX, DN, V) or 3.0 m (DJ, DC)
-      return l != null ? `≈ ${num(Number(l) * (["A", "DX", "DN", "V"].includes(t) ? 3.5 : 3.0))} m · ${l} ${s.lanes.toLowerCase()}` : null;
+      const l = at("lanes");  // estimate: lanes × 3.5 m (M, F) or 3.0 m (other roads)
+      return l != null ? `≈ ${num(Number(l) * (["M", "F"].includes(t) ? 3.5 : 3.0))} m · ${l} ${s.lanes.toLowerCase()}` : null;
     }
     return null;
   }
@@ -507,7 +506,7 @@ export function initMap(root: HTMLElement) {
       <label class="rt labels-opt"><input type="checkbox" data-construction ${showConstruction ? "checked" : ""}/>
         <span class="rt-line rt-dash"></span><span>${esc(s.show_construction)}</span></label>
       <label class="rt"><input type="checkbox" data-labels ${showLabels ? "checked" : ""}/>
-        <span class="shield" data-cat="DN">DN1</span><span>${esc(s.show_labels)}</span></label>`;
+        <span class="shield" data-cat="F">8</span><span>${esc(s.show_labels)}</span></label>`;
   }
   renderPanel();
   panel.addEventListener("click", (e) => {
@@ -516,7 +515,7 @@ export function initMap(root: HTMLElement) {
     if (bm) return setBasemap(bm.dataset.bm!);
     const q = t.closest<HTMLElement>("[data-quick]");
     if (q) {
-      visibleCats = new Set(q.dataset.quick === "main" ? ["A", "DX", "DN", "V"] : ROAD_TYPES);
+      visibleCats = new Set(q.dataset.quick === "main" ? ["M", "F"] : ROAD_TYPES);
       renderPanel();
       applyRoadTypes();
     }
@@ -526,7 +525,7 @@ export function initMap(root: HTMLElement) {
     if (box.dataset.show) {
       const id = box.dataset.show as DataId;
       if (box.checked) shownData.add(id); else shownData.delete(id);
-      store("borna.data.v2", JSON.stringify([...shownData]));
+      store("szelveny.data.v2", JSON.stringify([...shownData]));
       applyObjects();
       if (current.kind === "road") { stopStrip?.(); stopStrip = null; current.render(); } // open road follows
       return;
@@ -534,14 +533,14 @@ export function initMap(root: HTMLElement) {
     if (box.dataset.colour) { setMode(box.dataset.colour as Mode); return; }
     if (box.hasAttribute("data-construction")) {
       showConstruction = box.checked;
-      store("borna.construction", showConstruction ? "1" : "0");
+      store("szelveny.construction", showConstruction ? "1" : "0");
       if (map.getLayer("construction")) map.setLayoutProperty("construction", "visibility", showConstruction ? "visible" : "none");
       applyMode();
       return;
     }
     if (box.hasAttribute("data-labels")) {
       showLabels = box.checked;
-      store("borna.labels", showLabels ? "1" : "0");
+      store("szelveny.labels", showLabels ? "1" : "0");
       if (map.getLayer("road-labels")) map.setLayoutProperty("road-labels", "visibility", showLabels ? "visible" : "none");
       return;
     }
@@ -562,7 +561,7 @@ export function initMap(root: HTMLElement) {
   function setBasemap(id: string) {
     if (id === basemap) return;
     basemap = id;
-    store("borna.basemap", id);
+    store("szelveny.basemap", id);
     renderPanel();
     loading(true);
     map.setStyle(basemapStyle(id)); // style.load -> addOverlays()
@@ -585,7 +584,7 @@ export function initMap(root: HTMLElement) {
   loading(true);
 
   function applyRoadTypes() {
-    store("borna.cats.v2", JSON.stringify([...visibleCats]));
+    store("szelveny.cats.v2", JSON.stringify([...visibleCats]));
     if (!map.getLayer("roads")) return;
     for (const id of ROAD_LAYERS) map.setFilter(id, typeFilter());
     map.setFilter("road-labels", labelFilter());
@@ -844,21 +843,19 @@ export function initMap(root: HTMLElement) {
     const shares = qualityShares(road);
     const aadt = (road.attributes.aadt ?? []).map((e) => Number(e[2]));
     const statusText = (s as Record<string, string>)[`status_${road.lrs.status ?? "no_geometry"}`] ?? "";
-    const through = road.counties ? [...new Set(road.counties.map((c) => c[0]))] : road.through ?? [];
+    const through = road.through ?? [];
     const srcIds = new Set(Object.values(road.attributes).flat().map((e) => e[3]));
     // The strip shows the ticked data types that are drawn along the road.
     const stripOnly = ["surface", "lanes", "maxspeed", "aadt", "structures", "curve"].filter((id) => shownData.has(id as DataId));
     const stripLabels = onMap ? stripBands(road, s, { compact: true, only: stripOnly }).map((b) => b.label) : [];
-    const sources = [road.legal_source?.split(" (")[0] ?? (road.lrs.status === "osm_only" ? "" : "HG 540/2000"),
-      onMap ? "© OpenStreetMap (ODbL)" : "", srcIds.has("aadt_end") ? "MMAP, data.gov.ro (CC BY 4.0)" : ""].filter(Boolean);
+    const sources = [srcIds.has("nap") ? NAP_CREDIT : "", onMap ? "© OpenStreetMap (ODbL)" : ""].filter(Boolean);
 
     view.innerHTML = `<section>${backBtn()}
       <div class="detail-head">${shield(road.ref, road.category, true)}
         <div><h2>${esc(cat(road.category))}</h2>
         <div class="small muted">${esc(road.county ? countyName(road.county) : s.national_road)}</div></div></div>
       <p class="detail-route">${esc(road.route ?? "")}</p>
-      ${road.lrs.status === "osm_only" ? `<p class="note small">${esc(s.not_in_register_note)}</p>` : ""}
-      ${road.now_national ? `<p class="note small">${esc(s.now_national_note.replace("{ref}", road.now_national))}</p>` : ""}
+      ${road.lrs.status === "osm_only" ? `<p class="note small">${esc(s.osm_only_note)}</p>` : ""}
       ${here ? `<div class="here"><span class="small muted">${esc(s.here)}</span>
         <span class="km">km ${formatKm(here.km)}</span>
         ${details ? `<span class="q" data-q="${here.quality}" title="${esc((s as Record<string, string>)[`q_${here.quality}_long`])}">${esc(qual(here.quality))}</span>
@@ -869,10 +866,10 @@ export function initMap(root: HTMLElement) {
         <dt>${esc(s.official_length)}</dt><dd>${formatLength(road.length_official, lang)}</dd>
         <dt>${esc(s.official_km)}</dt><dd class="mono">${formatKm(road.km_from)} – ${formatKm(road.km_to)}</dd>
         ${details ? `<dt>${esc(s.on_map)}</dt><dd>${onMap ? `${formatLength(road.lrs.path_km, lang)} · <span class="muted">${esc(statusText)}</span>` : esc(s.not_on_map)}</dd>` : ""}
-        ${onMap && details ? `<dt>${esc(s.km_quality)}</dt><dd>${Math.round(shares.calibrated * 100)}% ${esc(qual("calibrated"))}
-          <div class="qbar">${(["calibrated", "interpolated", "estimated"] as Quality[]).map((q) =>
+        ${onMap && details ? `<dt>${esc(s.km_quality)}</dt><dd>${Math.round((shares.official || shares.calibrated) * 100)}% ${esc(qual(shares.official ? "official" : "calibrated"))}
+          <div class="qbar">${(["official", "calibrated", "interpolated", "estimated"] as Quality[]).map((q) =>
             `<span style="width:${shares[q] * 100}%;background:${QUALITY_COLOR[q]}"></span>`).join("")}</div></dd>` : ""}
-        <dt>${esc(s.administrator)}</dt><dd>${esc((s as Record<string, string>)[`owner_${OWNER_OF[road.category] ?? "private"}`])}${road.owner ? ` · ${esc(road.owner)}` : ""}</dd>
+        <dt>${esc(s.administrator)}</dt><dd>${esc((s as Record<string, string>)[`owner_${OWNER_OF[road.category] ?? "local"}`])}</dd>
         ${through.length ? `<dt>${esc(s.through)}</dt><dd>${through.map((c) => esc(countyName(c))).join(", ")}</dd>` : ""}
         ${aadt.length ? `<dt>${esc(s.aadt)}</dt><dd>${Math.min(...aadt).toLocaleString()} – ${Math.max(...aadt).toLocaleString()} ${esc(s.vehicles_day)}</dd>` : ""}
       </dl>
@@ -902,35 +899,35 @@ export function initMap(root: HTMLElement) {
     }
   }
 
-  // How far the km is from the nearest control point (county border, km stone, junction): the
+  // How far the km is from the nearest control point (km post or junction): the
   // km is exact there and less certain further away. Shown next to the quality label.
   function refDistance(road: Road, km: number): string {
     const cs = road.lrs.controls ?? [];
     if (!cs.length) return s.no_ref;
     const d = Math.min(...cs.map((c) => Math.abs(c - km)));
-    const locale = lang === "ro" ? "ro-RO" : "en-GB";
+    const locale = lang === "hu" ? "hu-HU" : "en-GB";
     const txt = d < 1 ? `${Math.round(d * 1000 / 10) * 10} m` : `${d.toLocaleString(locale, { maximumFractionDigits: d < 10 ? 1 : 0 })} km`;
     return s.nearest_ref.replace("{d}", txt);
   }
 
-  // "Source · date" under each value (dates from sources.json; HG 540 is cited, not dated).
+  // "Source · date" under each value (dates from sources.json).
   function srcText(id: string): string {
     const v = sourceVersion[id];
-    const date = v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v.split("-").reverse().join(".") : v;
-    const name = id === "osm" ? "OpenStreetMap" : id === "aadt_end" ? "MMAP, data.gov.ro" : id === "hg540" ? "HG 540/2000" : id;
-    return `${name}${date && id !== "hg540" ? ` · ${date}` : ""}`;
+    const date = v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? (lang === "hu" ? v.replace(/-/g, ". ") + "." : v) : v;
+    const name = id === "osm" ? "OpenStreetMap" : id === "nap" ? "NAP" : id;
+    return `${name}${date ? ` · ${date}` : ""}`;
   }
 
   // The ticked data types at one km of the road: value, source and date (the data list's purpose).
   function atPoint(road: Road, km: number): string {
-    const locale = lang === "ro" ? "ro-RO" : "en-GB";
+    const locale = lang === "hu" ? "hu-HU" : "en-GB";
     // Several OSM ways can cover one km (junction pieces, the other carriageway): take the
     // longest stretch, which is the road's own line rather than a short piece of a junction.
     const ev = (type: string): Event | undefined => (road.attributes[type] ?? [])
       .filter(([f, t]) => km >= f - 1e-6 && km <= t + 1e-6)
       .sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0];
-    const roadSrc = road.lrs.status === "osm_only" ? "osm" : "hg540";
-    const laneW = ["A", "DX", "DN", "V"].includes(road.category) ? 3.5 : 3.0;
+    const roadSrc = road.lrs.status === "osm_only" ? "osm" : "nap";
+    const laneW = ["M", "F"].includes(road.category) ? 3.5 : 3.0;
     const rows: [string, string, string | undefined][] = [];
     for (const d of DATA_TYPES) {
       if (!shownData.has(d.id)) continue;
@@ -947,7 +944,7 @@ export function initMap(root: HTMLElement) {
           break;
         }
         case "owner":
-          val = T[`owner_${OWNER_OF[road.category] ?? "private"}`] + (road.owner ? ` · ${road.owner}` : "");
+          val = T[`owner_${OWNER_OF[road.category] ?? "local"}`];
           src = roadSrc; break;
         case "surface": take(ev("surface"), (v) => `${T[`s_${surfaceClass(v)}`] ?? v} (${v})`); break;
         case "lanes": take(ev("lanes"), (v) => v); break;
@@ -993,9 +990,8 @@ export function initMap(root: HTMLElement) {
   }
 
   function countyAtKm(road: Road, km: number | undefined): string | null {
-    if (km == null || !road.counties) return null;
-    const sec = road.counties.find(([, f, t]) => f != null && t != null && km >= f && km <= t);
-    return sec ? sec[0] : null;
+    // National road numbers are unique nationwide: a road in one county goes back to that county.
+    return km != null && road.through?.length === 1 ? road.through[0] : null;
   }
 
   function clearSelection() {

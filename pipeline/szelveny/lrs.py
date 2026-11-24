@@ -1,17 +1,21 @@
-"""Phase 2: build the linear reference network (road number + km -> place on the map).
+"""Build the linear reference network from OSM (road number + km -> place on the map).
 
-1. Normalise OSM road numbers to HG 540 form (borna.osm_way_ref) and note the counties each
-   numbered way touches (borna.osm_way_county).
-2. For each HG 540 road, build one centreline through its OSM ways: node the lines, bridge small
-   gaps at dead ends, keep the longest path (which also picks one side of dual carriageways).
-   County roads (DJ/DC/DP) are clipped to their county, since their numbers repeat elsewhere.
-3. Calibrate km along the path, in Stereo 70, from control points:
-     - county borders: HG 540's per-county DN tables give the km at every border crossing
-     - OSM milestones carrying the road number and a km value
-     - the official start/end km, when the path agrees with them
+Since NAP's national network carries official szelvény per section (ROADMAP decision gate,
+2026-11-24), roads in NAP get their reference geometry from NAP (Phase 3). This module is the
+calibration path for roads NAP doesn't have, and the OSM fallback that keeps the site working
+if NAP access stops (CLAUDE.md, ÁSZF §38).
+
+1. Normalise OSM road numbers ('M 1' -> 'M1', '4512') into szelveny.osm_way_ref and note the
+   counties each numbered way touches (szelveny.osm_way_county).
+2. For each road, build one centreline through its OSM ways: node the lines, bridge small gaps
+   at dead ends, keep the longest path (which also picks one side of dual carriageways).
+3. Calibrate km along the path, in EOV, from control points:
+     - OSM km posts (highway=milestone) carrying the road number and a km value
+     - junctions with the roads named at the route's ends
+     - the official start/end km, when known and the path agrees with them
    km is piecewise linear between control points.
-4. Write borna.road_segment (one segment between consecutive control points, with km_quality)
-   and borna.lrs_road; check tests/lrs_checkpoints.csv with borna.locate().
+4. Write szelveny.road_segment (one segment between consecutive control points, with km_quality)
+   and szelveny.lrs_road; check tests/lrs_checkpoints.csv with szelveny.locate().
 
 km_quality: 'calibrated' between two independent control points, 'interpolated' between an
 official end and a control point, 'estimated' when extrapolated or the path disagrees with
@@ -33,8 +37,8 @@ from shapely import wkb
 from shapely.geometry import LineString, MultiLineString, MultiPoint, Point
 from shapely.ops import nearest_points, substring
 
-from borna.config import CRS_METRIC, DATA_OUT, PG_DSN, ROOT
-from borna.romania import county_code, fold
+from szelveny.config import CRS_METRIC, DATA_OUT, PG_DSN, ROOT
+from szelveny.hungary import CATEGORIES, county_code, fold, normalise_ref
 
 GAP_M = 300            # bridge gaps up to this size between dead ends of a road's ways
 MIN_PIECE_M = 500      # national roads: separate pieces shorter than this are ignored
@@ -42,52 +46,33 @@ TWIN_M = 80            # a whole piece running this close alongside a longer pie
 TWIN_SHARE = 0.8       # ... for at least this share of its length is the other carriageway
 FOLD_NEAR_M = 70       # the path passing this close to itself, ...
 FOLD_MIN_M = 1500      # ... at least this far apart along it, is running back on itself
-OSM_ONLY_MIN_M = 2000  # OSM-only national roads shorter than this are not added (review list)
-OSM_ONLY_CATEGORIES = ("A", "DX", "DN", "V")
-OSM_ONLY_HIGHWAYS = ("motorway", "trunk", "primary")  # national roads are mapped as these
-# Bypasses ('Centura Beclean', 'Varianta Ocolitoare Brănești') are short and sometimes mapped as
-# secondary roads: named ones need only 1 km, mapped as trunk/primary/secondary.
-OSM_ONLY_BYPASS_RE = re.compile(r"\b(centura|varianta|ocolitoare|ocolire)\b", re.IGNORECASE)
-OSM_ONLY_BYPASS_MIN_M = 1000
-OSM_ONLY_MAX_SHARED = 0.5  # a candidate mostly on ways of a register road is an alias ('DNVO1Z' on CORA)
+# Roads taken from OSM: short bekötő utak are real, so the bar is low; tune in Phase 3 against NAP.
+OSM_ONLY_MIN_M = 300   # numbered roads mapped shorter than this go to the review list
+OSM_ONLY_CATEGORIES = CATEGORIES
+OSM_ONLY_HIGHWAYS = ("motorway", "trunk", "primary", "secondary", "tertiary", "unclassified")
+OSM_ONLY_MAX_SHARED = 0.5  # a candidate mostly on ways of an official road is an alias
 MILESTONE_SNAP_M = 50  # a milestone further from the path than this is ignored
 JUNCTION_SNAP_M = 150  # the road named at a route end must come this close to the path
 PLACE_NEAR_M = 5000    # a place named at a route end must be this close to the path
-STOP_PREFIX_RE = re.compile(r"^(MUN\.?|MUNICIPIUL|ORAS(UL)?|COMUNA|SAT(UL)?|GARA|STATIA CF)\s+")
 LENGTH_TOLERANCE = 0.10
 CHECKPOINT_TARGET_M = 50
 
-OSM_REF_RE = re.compile(r"^(A|DN|DJ|DC|DP|DEX|DX)(\d+)([A-ZĂÂÎȘȚ]{0,3}\d?)$")
-# Bypasses opened after the last HG 540 amendment carry informal codes in OSM: 'DNVO1Z'
-# (Centura Oradea), 'DNVOF' (Făgăraș), 'VO3G'. Kept as written, without 'DN'; never official.
-OSM_BYPASS_RE = re.compile(r"^(?:DN)?(VO[0-9A-Z]{1,4})$")
-ROUTE_REF_RE = re.compile(r"\b(A|DN|DJ|DC)\s?(\d+\s?[A-Z]?)\b")
+# A road number in brackets after a stop: 'Győr (1)', 'Lenti (M70)', 'Zalaegerszeg (74. sz. főút)'.
+ROUTE_REF_RE = re.compile(r"\((M\s?\d{1,2}|\d{1,5})\.?(?:\s*sz\.)?(?:\s*(?:fő|számú\s)?út)?\)")
 
 
 # --- 1. road numbers ---------------------------------------------------------------------
 
-def normalise_osm_ref(token: str, bypass_codes: set[str]) -> tuple[str, str] | None:
-    """One OSM ref token -> (ref, category) in HG 540 form, or None.
+def normalise_osm_ref(token: str) -> tuple[str, str] | None:
+    """One OSM ref token -> (ref, category), or None (see hungary.normalise_ref).
 
-    'DN 6' -> ('DN6', 'DN'), 'DEx12' -> ('DX12', 'DX'), 'DNCB' -> ('CB', 'V') when CB is an
-    HG 540 bypass code, 'DNVOF' -> ('VOF', 'V') for a bypass HG 540 does not list yet.
-    Bare numbers ('34') and foreign refs are left out.
+    'M 1' -> ('M1', 'M'), '86' -> ('86', 'F'), '4512' -> ('4512', 'OK'). E-road numbers and
+    other countries' refs are left out.
     """
-    t = re.sub(r"[\s.]", "", token.upper())
-    if t in bypass_codes:  # before the pattern: 'DN7CC' is the 7CC bypass, not DN7 + 'CC'
-        return t, "V"
-    if t.startswith("DN") and t[2:] in bypass_codes:
-        return t[2:], "V"
-    if m := OSM_BYPASS_RE.match(t):
-        return m.group(1), "V"
-    if m := OSM_REF_RE.match(t):
-        prefix = "DX" if m.group(1) == "DEX" else m.group(1)
-        return f"{prefix}{m.group(2)}{m.group(3)}", prefix
-    return None
+    return normalise_ref(token)
 
 
 def build_way_refs(conn) -> None:
-    bypass = {r for (r,) in conn.execute("SELECT ref FROM borna.road WHERE category = 'V'")}
     tokens = {t.strip() for (raw,) in conn.execute(
         "SELECT DISTINCT ref FROM raw.osm_roads WHERE ref IS NOT NULL "
         "UNION SELECT DISTINCT ref FROM raw.osm_road_routes WHERE ref IS NOT NULL")
@@ -95,11 +80,11 @@ def build_way_refs(conn) -> None:
     conn.execute("CREATE TEMP TABLE ref_map (raw text PRIMARY KEY, ref text, category text)")
     with conn.cursor().copy("COPY ref_map FROM STDIN") as copy:
         for t in tokens:
-            if t and (n := normalise_osm_ref(t, bypass)):
+            if t and (n := normalise_osm_ref(t)):
                 copy.write_row((t, *n))
     conn.execute("""
-        TRUNCATE borna.osm_way_ref, borna.osm_way_county;
-        INSERT INTO borna.osm_way_ref
+        TRUNCATE szelveny.osm_way_ref, szelveny.osm_way_county;
+        INSERT INTO szelveny.osm_way_ref
         SELECT osm_id, ref, min(category), bool_or(via_tag), bool_or(via_route)
         FROM (
             SELECT w.osm_id, m.ref, m.category, true AS via_tag, false AS via_route
@@ -112,7 +97,7 @@ def build_way_refs(conn) -> None:
             CROSS JOIN LATERAL jsonb_array_elements_text(r.way_ids) AS way_id
             CROSS JOIN LATERAL regexp_split_to_table(r.ref, '[;,]') AS tok
             JOIN ref_map m ON m.raw = trim(tok)
-            WHERE r.network IS NULL OR r.network ILIKE 'RO:%'
+            WHERE r.network IS NULL OR r.network ILIKE 'HU:%'
         ) x
         WHERE osm_id IN (SELECT osm_id FROM raw.osm_roads)
         GROUP BY osm_id, ref;
@@ -120,47 +105,16 @@ def build_way_refs(conn) -> None:
         CREATE TEMP TABLE county_part AS
         SELECT name, ST_Subdivide(geom, 256) AS geom FROM raw.osm_counties;
         CREATE INDEX ON county_part USING gist (geom);
-        INSERT INTO borna.osm_way_county
+        INSERT INTO szelveny.osm_way_county
         SELECT DISTINCT w.osm_id, c.name
         FROM raw.osm_roads w JOIN county_part c ON ST_Intersects(w.geom, c.geom)
-        WHERE w.osm_id IN (SELECT osm_id FROM borna.osm_way_ref);
+        WHERE w.osm_id IN (SELECT osm_id FROM szelveny.osm_way_ref);
         DROP TABLE county_part, ref_map;
     """)
-    # OSM county names ('Covasna', 'București') -> ISO codes
-    for (name,) in conn.execute("SELECT DISTINCT county FROM borna.osm_way_county").fetchall():
-        conn.execute("UPDATE borna.osm_way_county SET county = %s WHERE county = %s",
+    # OSM county names ('Győr-Moson-Sopron vármegye', 'Budapest') -> ISO codes
+    for (name,) in conn.execute("SELECT DISTINCT county FROM szelveny.osm_way_county").fetchall():
+        conn.execute("UPDATE szelveny.osm_way_county SET county = %s WHERE county = %s",
                      (county_code(name), name))
-    conn.execute("""
-        -- HG 540 still lists some county roads that were transferred to the state and renumbered
-        -- (DJ113 Covasna = DN11C); OSM route relations may still bundle them on the national road.
-        -- Such a county road gives its national-tagged ways up when they add up to at least half its
-        -- own official length: a duplicate (DJ113 = DN11C) or a relation that wandered onto the
-        -- national road (DJ156 Prahova, officially 6.4 km, claimed 9 km of DN72). The road page's
-        -- "now DN11C" note needs a national road of about the same length (tiles.py).
-        -- Ordinary shared stretches (DJ391 along DN38) stay: they hold county routes together.
-        CREATE TEMP TABLE route_claims AS
-        SELECT x.osm_id, x.ref, c.county, min(n.ref) AS national,
-               ST_Length(w.geom::geography) AS m
-        FROM borna.osm_way_ref x
-        JOIN borna.osm_way_ref n ON n.osm_id = x.osm_id AND n.via_tag
-                                AND n.category IN ('A', 'DX', 'DN', 'V')
-        JOIN raw.osm_roads w ON w.osm_id = x.osm_id
-        JOIN borna.osm_way_county c ON c.osm_id = x.osm_id
-        WHERE NOT x.via_tag AND x.category IN ('DJ', 'DC')
-        GROUP BY x.osm_id, x.ref, c.county, w.geom;
-        CREATE TEMP TABLE route_claims_dropped AS
-        SELECT rc.* FROM route_claims rc
-        JOIN (SELECT rc2.ref, rc2.county, rc2.national
-              FROM route_claims rc2
-              JOIN borna.road cr ON cr.ref = rc2.ref AND cr.county = rc2.county
-              JOIN borna.road nr ON nr.ref = rc2.national AND nr.county IS NULL
-                                AND nr.source_id <> 'osm'
-              GROUP BY rc2.ref, rc2.county, rc2.national, cr.length_official
-              HAVING sum(rc2.m) >= 500 * cr.length_official
-             ) dup USING (ref, county, national);
-        DELETE FROM borna.osm_way_ref x USING route_claims_dropped d
-        WHERE x.osm_id = d.osm_id AND x.ref = d.ref;
-    """)
 
 
 # --- 2. centreline ---------------------------------------------------------------------
@@ -176,7 +130,7 @@ def build_path(lines: list[LineString], gap_m: float = GAP_M,
     Returns the path and its unmapped gaps as (from, to) positions in metres.
 
     When the lines fall into separate pieces:
-      - connect_pieces (national roads, which really are built in pieces, e.g. A1): all pieces
+      - connect_pieces (national roads, which really are built in pieces, e.g. M0): all pieces
         of at least MIN_PIECE_M are linked through their nearest ends, so km runs on across
         the gaps; the links are returned as gaps and are not drawn;
       - else the longest piece wins, unless `prefer` points (the places a route is officially
@@ -363,7 +317,7 @@ def _fold(path: LineString, step: float = 100.0) -> tuple[float, float] | None:
 class Control:
     pos: float   # metres along the path
     km: float
-    kind: str    # 'border' | 'junction' | 'milestone' | 'start' | 'end' | 'extrapolated'
+    kind: str    # 'junction' | 'milestone' | 'start' | 'end' | 'extrapolated'
 
 
 def _increasing(controls: list[Control]) -> list[Control]:
@@ -409,8 +363,8 @@ def anchors_for(length: float, km_from: float, km_to: float,
     if not pts:
         span = km_to - km_from
         if span <= 0 or abs(length / 1000 - span) / span > LENGTH_TOLERANCE:
-            # the path doesn't match the official span (a road longer than the register says,
-            # like A3, or only partly mapped): count km at true scale from the start, estimated
+            # the path doesn't match the official span (a road longer than its official length,
+            # or only partly mapped): count km at true scale from the start, estimated
             return [Control(0, km_from, "start"), Control(length, km_from + length / 1000, "extrapolated")]
         return [Control(0, km_from, "start"), Control(length, km_to, "end")]
     if pts[0].pos < 1:
@@ -465,7 +419,7 @@ def segment_quality(a: Control, b: Control, length_ok: bool) -> str:
     kinds = {a.kind, b.kind}
     if "extrapolated" in kinds or not length_ok:
         return "estimated"
-    if kinds <= {"border", "milestone", "junction"}:
+    if kinds <= {"milestone", "junction"}:
         return "calibrated"
     return "interpolated"
 
@@ -473,30 +427,30 @@ def segment_quality(a: Control, b: Control, length_ok: bool) -> str:
 # --- 4. build ---------------------------------------------------------------------------
 
 def _end_refs(route_desc: str | None) -> tuple[str | None, str | None]:
-    """Roads named at the first and last stop of an official route:
-    'Chichiș (DN 11)- Sfântu Gheorghe- Toplița (DN 15)' -> ('DN11', 'DN15')."""
+    """Roads named at the first and last stop of a route:
+    'Lenti (M70) - Zalaegerszeg - Győr (1)' -> ('M70', '1')."""
     if not route_desc:
         return None, None
     stops = re.split(r"\s[-–]\s?|[-–]\s", route_desc.split(" | ")[0])
 
     def ref_in(stop: str) -> str | None:
         m = ROUTE_REF_RE.search(stop)
-        return f"{m.group(1)}{m.group(2).replace(' ', '')}" if m else None
+        return m.group(1).replace(" ", "") if m else None
 
     return ref_in(stops[0]), (ref_in(stops[-1]) if len(stops) > 1 else None)
 
 
 def stop_names(route_desc: str | None) -> tuple[str | None, str | None]:
     """Place names at a route's first and last stop, folded for matching:
-    'Ghimbav (DN 1) - Brașov' -> ('GHIMBAV', 'BRASOV'). Stops that are a county limit, a
-    junction or a road number give None."""
+    'Győr (1) - Pápa' -> ('GYOR', 'PAPA'). Stops that are a county border, a junction or a
+    road number give None."""
     if not route_desc:
         return None, None
     stops = re.split(r"\s[-–]\s?|[-–]\s", route_desc.split(" | ")[0])
 
     def clean(stop: str) -> str | None:
-        name = STOP_PREFIX_RE.sub("", fold(re.sub(r"\(.*?\)", "", stop)).strip())
-        if not name or re.search(r"LIMIT|INTERSECT|^(A|DN|DJ|DC)\s?\d", name):
+        name = fold(re.sub(r"\(.*?\)", "", stop)).strip()
+        if not name or re.search(r"HATAR|CSOMOPONT|ELAGAZAS|^M?\s?\d", name):
             return None
         return name
 
@@ -531,24 +485,6 @@ def attach_junctions(path: LineString, start_hint, end_hint, km_from: float,
     return path, [Control(path.project(pt), km, "junction") for pt, km in controls]
 
 
-def _border_controls(path: LineString, sections: list[tuple], county_geom: dict) -> list[Control]:
-    """km at county-border crossings from the per-county DN sections (county, km_from, km_to)."""
-    out = []
-    secs = sorted(sections, key=lambda s: s[1])
-    for (c1, _f1, t1), (c2, f2, _t2) in itertools.pairwise(secs):
-        if c1 == c2 or abs(t1 - f2) > 0.5 or c1 not in county_geom or c2 not in county_geom:
-            continue
-        border = county_geom[c1].boundary.intersection(county_geom[c2].boundary)
-        if border.is_empty:
-            continue
-        hits = path.intersection(border)
-        pts = [hits] if isinstance(hits, Point) else [
-            g for g in getattr(hits, "geoms", []) if isinstance(g, Point)]
-        if len(pts) == 1:  # several crossings: ambiguous, skip
-            out.append(Control(path.project(pts[0]), float(t1), "border"))
-    return out
-
-
 HOLDOUT_EVERY = 5  # --holdout: every 5th milestone (by OSM id) is kept out of calibration
 
 
@@ -561,9 +497,9 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
     for _osm_id, ref, counties, g, is_link in conn.execute(f"""
             SELECT w.osm_id, r.ref, array_remove(array_agg(DISTINCT c.county), NULL),
                    ST_AsBinary(ST_Transform(w.geom, {srid})), right(w.highway, 5) = '_link'
-            FROM borna.osm_way_ref r
+            FROM szelveny.osm_way_ref r
             JOIN raw.osm_roads w USING (osm_id)
-            LEFT JOIN borna.osm_way_county c USING (osm_id)
+            LEFT JOIN szelveny.osm_way_county c USING (osm_id)
             WHERE w.highway <> 'construction'
             GROUP BY w.osm_id, r.ref, w.geom, w.highway"""):
         ways_by_ref[ref].append((set(counties), wkb.loads(bytes(g)), is_link))
@@ -571,14 +507,13 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
     county_geom = {county_code(name): wkb.loads(bytes(g)) for name, g in conn.execute(
         f"SELECT name, ST_AsBinary(ST_Transform(geom, {srid})) FROM raw.osm_counties")}
 
-    bypass = {r for (r,) in conn.execute("SELECT ref FROM borna.road WHERE category = 'V'")}
     milestones = defaultdict(list)
     held_out = []  # (ref, km, osm_id) of milestones kept out to test against
     for osm_id, ref, dist, g in conn.execute(f"""
             SELECT osm_id, ref, distance, ST_AsBinary(ST_Transform(geom, {srid}))
             FROM raw.osm_road_points WHERE kind = 'milestone' AND ref IS NOT NULL
               AND distance ~ '^\\s*\\d+([.,]\\d+)?\\s*$'"""):
-        if n := normalise_osm_ref(ref.split(";")[0], bypass):
+        if n := normalise_osm_ref(ref.split(";")[0]):
             km = float(dist.replace(",", "."))
             if holdout and osm_id % HOLDOUT_EVERY == 0:
                 held_out.append((n[0], km, osm_id))
@@ -590,43 +525,34 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
             f"SELECT name, ST_AsBinary(ST_Transform(geom, {srid})) FROM raw.osm_places"):
         places[fold(name)].append(wkb.loads(bytes(g)))
 
-    sections = defaultdict(list)
-    for ref, county, f, t in conn.execute(
-            "SELECT ref, county, km_from, km_to FROM borna.register_entry "
-            "WHERE list = 'county_dn' AND km_from IS NOT NULL AND km_to IS NOT NULL"):
-        sections[ref].append((county, float(f), float(t)))
-
-    # National roads open in OSM but missing from HG 540 (A7, DX12, Centura Brașov DN1K, the
-    # Făgăraș bypass VOF, ...): added as roads with source 'osm', no official km, the OSM name
-    # as route. Candidates too short or not mapped as main roads go to the review list instead.
+    # Numbered roads in OSM but not in the official network (until Phase 3 loads NAP: all of
+    # them): added as roads with source 'osm', no official km, the OSM name as route.
+    # Candidates too short or not mapped as through roads go to the review list instead.
     candidates = conn.execute(f"""
         SELECT x.ref, min(x.category),
                sum(ST_Length(w.geom::geography)) FILTER (WHERE w.highway IN {OSM_ONLY_HIGHWAYS}),
-               sum(ST_Length(w.geom::geography)) FILTER (WHERE w.highway IN {OSM_ONLY_HIGHWAYS + ("secondary",)}),
                sum(ST_Length(w.geom::geography)),
                mode() WITHIN GROUP (ORDER BY w.highway),
                mode() WITHIN GROUP (ORDER BY w.name),
                sum(ST_Length(w.geom::geography)) FILTER (WHERE s.refs IS NOT NULL),
                string_agg(DISTINCT s.refs, ',')
-        FROM borna.osm_way_ref x JOIN raw.osm_roads w USING (osm_id)
+        FROM szelveny.osm_way_ref x JOIN raw.osm_roads w USING (osm_id)
         LEFT JOIN LATERAL (
-            SELECT string_agg(y.ref, ',') AS refs FROM borna.osm_way_ref y
-            JOIN borna.road r ON r.ref = y.ref AND r.source_id <> 'osm'
+            SELECT string_agg(y.ref, ',') AS refs FROM szelveny.osm_way_ref y
+            JOIN szelveny.road r ON r.ref = y.ref AND r.source_id <> 'osm'
             WHERE y.osm_id = x.osm_id AND y.ref <> x.ref) s ON true
         WHERE x.category IN {OSM_ONLY_CATEGORIES}
-          AND NOT EXISTS (SELECT 1 FROM borna.road r WHERE r.ref = x.ref AND r.source_id <> 'osm')
+          AND NOT EXISTS (SELECT 1 FROM szelveny.road r WHERE r.ref = x.ref AND r.source_id <> 'osm')
         GROUP BY x.ref ORDER BY x.ref""").fetchall()
-    conn.execute("DELETE FROM borna.road WHERE source_id = 'osm'")
+    conn.execute("DELETE FROM szelveny.road WHERE source_id = 'osm'")
     osm_only_report = []
-    for ref, category, main_m, sec_m, all_m, highway, name, shared_m, shared_refs in candidates:
+    for ref, category, main_m, all_m, highway, name, shared_m, shared_refs in candidates:
         alias = (shared_m or 0) > OSM_ONLY_MAX_SHARED * all_m
-        bypass = category in ("DN", "V") and bool(name and OSM_ONLY_BYPASS_RE.search(name))
-        added = not alias and ((main_m or 0) > OSM_ONLY_MIN_M
-                               or (bypass and (sec_m or 0) > OSM_ONLY_BYPASS_MIN_M))
+        added = not alias and (main_m or 0) > OSM_ONLY_MIN_M
         if added:
-            # OSM names fit bypasses ('Centura Brașov') but not motorways ('Lot 1').
-            route = name if category in ("DN", "V") else None
-            conn.execute("INSERT INTO borna.road (ref, category, county, route_desc, source_id) "
+            # OSM names fit named roads, not motorway sections ('M0 déli szektor').
+            route = name if category != "M" else None
+            conn.execute("INSERT INTO szelveny.road (ref, category, county, route_desc, source_id) "
                          "VALUES (%s, %s, NULL, %s, 'osm')", (ref, category, route))
         osm_only_report.append({
             "ref": ref, "category": category, "km": round(all_m / 1000, 1),
@@ -644,7 +570,7 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
     roads = conn.execute("""
         SELECT road_id, ref, category, county, route_desc,
                km_from_official, km_to_official, length_official, source_id = 'osm'
-        FROM borna.road ORDER BY category, ref""").fetchall()
+        FROM szelveny.road ORDER BY category, ref""").fetchall()
 
     hints: dict[tuple, object] = {}
 
@@ -693,12 +619,12 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
             km_from, km_to = 0.0, (path.length - sum(t - f for f, t in gaps)) / 1000
         if path is None or km_from is None or km_to is None:
             results.append({"road_id": road_id, "status": "no_geometry", "official_km": official,
-                                "path_km": None, "n_border": 0, "n_milestone": 0, "orientation": "none",
+                                "path_km": None, "n_junction": 0, "n_milestone": 0, "orientation": "none",
                                 "km_quality": "estimated", "controls_km": None})
             continue
         km_from, km_to, plen = float(km_from), float(km_to), path.length
 
-        interior = _border_controls(path, sections.get(ref, []), county_geom) if not county else []
+        interior = []
         for km, pt in milestones.get(ref, []):
             if path.distance(pt) <= MILESTONE_SNAP_M and (not county or county_geom.get(county) is None
                                                           or county_geom[county].covers(pt)):
@@ -742,7 +668,7 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
         anchors = anchors_for(plen, km_from, km_to, interior)
         used = {(round(a.pos), a.kind) for a in anchors}
         n_ms = sum(1 for c in interior if c.kind == "milestone" and (round(c.pos), c.kind) in used)
-        n_bd = sum(1 for c in interior if c.kind in ("border", "junction")
+        n_jn = sum(1 for c in interior if c.kind == "junction"
                    and (round(c.pos), c.kind) in used)
         span = km_to - km_from
         length_ok = how != "none" and (
@@ -764,31 +690,31 @@ def build(conn, holdout: bool = False) -> tuple[list[dict], list[tuple]]:
             status = "ok" if official and abs(mapped / 1000 - official) / official <= LENGTH_TOLERANCE \
                 else "partial"
         results.append({"road_id": road_id, "status": status, "official_km": official,
-                            "path_km": round(mapped / 1000, 3), "n_border": n_bd, "n_milestone": n_ms,
+                            "path_km": round(mapped / 1000, 3), "n_junction": n_jn, "n_milestone": n_ms,
                             "orientation": how, "km_quality": worst,
                             "controls_km": sorted({round(a.km, 3) for a in anchors
-                                                   if a.kind in ("border", "milestone", "junction")})})
+                                                   if a.kind in ("milestone", "junction")})})
 
     print(f"lrs: writing {len(segments):,} segments…", flush=True)
-    conn.execute("TRUNCATE borna.road_segment, borna.lrs_road RESTART IDENTITY")
+    conn.execute("TRUNCATE szelveny.road_segment, szelveny.lrs_road RESTART IDENTITY")
     conn.execute("CREATE TEMP TABLE seg_in (road_id int, sequence int, km_from numeric, "
                  "km_to numeric, g bytea, km_quality text)")
     with conn.cursor().copy("COPY seg_in FROM STDIN") as copy:
         for row in segments:
             copy.write_row(row)
     conn.execute(f"""
-        INSERT INTO borna.road_segment (road_id, sequence, km_from, km_to, geom, km_quality, source_id)
+        INSERT INTO szelveny.road_segment (road_id, sequence, km_from, km_to, geom, km_quality, source_id)
         SELECT road_id, sequence, km_from, km_to,
                ST_Transform(ST_SetSRID(ST_GeomFromWKB(g), {srid}), 4326), km_quality, 'osm'
         FROM seg_in WHERE ST_GeometryType(ST_GeomFromWKB(g)) = 'ST_LineString';
         DROP TABLE seg_in;
     """)
     with conn.cursor().copy(
-            "COPY borna.lrs_road (road_id, status, official_km, path_km, n_border, n_milestone, "
+            "COPY szelveny.lrs_road (road_id, status, official_km, path_km, n_junction, n_milestone, "
             "orientation, km_quality, controls_km) FROM STDIN") as copy:
         for r in results:
             copy.write_row([r[k] for k in ("road_id", "status", "official_km", "path_km",
-                                           "n_border", "n_milestone", "orientation", "km_quality",
+                                           "n_junction", "n_milestone", "orientation", "km_quality",
                                            "controls_km")])
     return results, held_out
 
@@ -816,7 +742,7 @@ def _check_file(conn, checkpoints, file_name: str) -> list[dict]:
                 SELECT l.km_quality,
                        round(ST_Distance(l.geom::geography,
                              ST_SetSRID(ST_Point(%s, %s), 4326)::geography)::numeric, 1)
-                FROM borna.locate(%s, %s, %s) l""",
+                FROM szelveny.locate(%s, %s, %s) l""",
                 (float(cp["lon"]), float(cp["lat"]), cp["road"], cp["km"],
                  cp.get("county") or None)).fetchone()
             out.append({"file": file_name, "road": cp["road"], "km": cp["km"],
@@ -833,7 +759,7 @@ def check_holdout(conn, held_out: list[tuple]) -> list[float]:
     for ref, km, osm_id in held_out:
         row = conn.execute("""
             SELECT ST_Distance(l.geom::geography, p.geom::geography)
-            FROM borna.locate(%s, %s::numeric) l, raw.osm_road_points p
+            FROM szelveny.locate(%s, %s::numeric) l, raw.osm_road_points p
             WHERE p.osm_id = %s AND ST_DWithin(l.geom::geography, p.geom::geography, 5000)""",
             (ref, km, osm_id)).fetchone()
         if row:
@@ -844,17 +770,13 @@ def check_holdout(conn, held_out: list[tuple]) -> list[float]:
 def main() -> int:
     holdout = "--holdout" in sys.argv
     with psycopg.connect(PG_DSN) as conn:
-        conn.execute((ROOT / "pipeline" / "sql" / "10_lrs.sql").read_text())
+        sql = (ROOT / "pipeline" / "sql" / "10_lrs.sql").read_text()
+        conn.execute(sql.replace("{CRS_METRIC}", str(CRS_METRIC)))
         print("lrs: normalising OSM road numbers…", flush=True)
         build_way_refs(conn)
         n_ways, n_refs = conn.execute(
-            "SELECT count(DISTINCT osm_id), count(DISTINCT ref) FROM borna.osm_way_ref").fetchone()
+            "SELECT count(DISTINCT osm_id), count(DISTINCT ref) FROM szelveny.osm_way_ref").fetchone()
         print(f"lrs: {n_ways:,} ways carry {n_refs:,} distinct road numbers")
-        dropped = conn.execute("""
-            SELECT ref, county, national, count(*), round((sum(m) / 1000)::numeric, 1)
-            FROM route_claims_dropped GROUP BY 1, 2, 3 ORDER BY 5 DESC""").fetchall()
-        print(f"lrs: {sum(r[3] for r in dropped):,} ways tagged as national roads were not given "
-              f"to county-road relations ({len(dropped)} roads, route_claims_dropped.csv)")
         results, held_out = build(conn, holdout)
         conn.commit()
         checkpoints = check_checkpoints(conn)
@@ -866,19 +788,19 @@ def main() -> int:
                    count(*) FILTER (WHERE l.status = 'no_geometry'),
                    round(100 * (SELECT sum(s.length_m) FILTER (WHERE s.km_quality = 'calibrated')
                                 / nullif(sum(s.length_m), 0)
-                         FROM borna.road_segment s JOIN borna.road r2 USING (road_id)
+                         FROM szelveny.road_segment s JOIN szelveny.road r2 USING (road_id)
                          WHERE r2.category = r.category)),
                    round(sum(l.path_km)), round(sum(l.official_km))
-            FROM borna.lrs_road l JOIN borna.road r USING (road_id)
+            FROM szelveny.lrs_road l JOIN szelveny.road r USING (road_id)
             GROUP BY 1 ORDER BY 2 DESC""").fetchall()
         gaps = conn.execute("""
             SELECT r.ref, r.county, r.category, l.status, l.official_km, l.path_km, r.route_desc
-            FROM borna.lrs_road l JOIN borna.road r USING (road_id)
+            FROM szelveny.lrs_road l JOIN szelveny.road r USING (road_id)
             WHERE l.status <> 'ok' ORDER BY r.category, r.county, r.ref""").fetchall()
         unknown = conn.execute("""
             SELECT w.ref, w.category, count(*) AS ways
-            FROM borna.osm_way_ref w
-            WHERE NOT EXISTS (SELECT 1 FROM borna.road r WHERE r.ref = w.ref)
+            FROM szelveny.osm_way_ref w
+            WHERE NOT EXISTS (SELECT 1 FROM szelveny.road r WHERE r.ref = w.ref)
             GROUP BY 1, 2 ORDER BY 3 DESC""").fetchall()
 
     out = DATA_OUT / "lrs"
@@ -887,14 +809,10 @@ def main() -> int:
         w = csv.writer(f)
         w.writerow(["ref", "county", "category", "status", "official_km", "path_km", "route_desc"])
         w.writerows(gaps)
-    with open(out / "osm_refs_not_in_register.csv", "w", newline="", encoding="utf-8") as f:
+    with open(out / "osm_refs_not_in_network.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["ref", "category", "ways"])
         w.writerows(unknown)
-    with open(out / "route_claims_dropped.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["ref", "county", "national", "ways", "km"])
-        w.writerows(dropped)
     with open(out / "checkpoints.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(checkpoints[0]) if checkpoints else ["road"])
         w.writeheader()
@@ -904,8 +822,8 @@ def main() -> int:
           f"{'path km':>10}{'official km':>13}")
     for cat, n, ok, part, none, cal, pkm, okm in report:
         print(f"{cat:<4}{n:>7}{ok:>7}{part:>9}{none:>9}{cal or 0:>9}{pkm or 0:>10}{okm or 0:>13}")
-    print(f"\n{len(unknown)} OSM road numbers not in the HG 540 register "
-          f"(see {out / 'osm_refs_not_in_register.csv'})")
+    print(f"\n{len(unknown)} OSM road numbers not in the road table "
+          f"(see {out / 'osm_refs_not_in_network.csv'})")
     print("checkpoints:")
     fails = 0
     for cp in checkpoints:

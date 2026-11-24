@@ -1,0 +1,22 @@
+---
+// /kereses/?q=M1 12+300: hands the query to the map's search, which finds the road and drops a
+// pin at the szelvény. A page of its own so the URL can be shared and used as a search action.
+import Base from "../layouts/Base.astro";
+import { routes, strings, type Lang } from "../lib/i18n";
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+---
+<Base lang={lang} page="search" title={s.search_placeholder} noindex>
+  <main class="page" id="search" data-map={routes[lang].map}>
+    <p class="muted">{s.loading}</p>
+    <noscript><p><a href={routes[lang].map}>{s.nav_map}</a></p></noscript>
+  </main>
+</Base>
+
+<script>
+  const root = document.getElementById("search")!;
+  const q = new URLSearchParams(location.search).get("q");
+  location.replace(root.dataset.map! + (q ? `?q=${encodeURIComponent(q)}` : ""));
+</script>

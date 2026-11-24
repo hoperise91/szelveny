@@ -1,6 +1,6 @@
-"""Phase 4.1: weekly refresh: compare the new export with the published one, check it, report.
+"""Weekly refresh: compare the new export with the published one, check it, report.
 
-Usage: python -m borna.refresh [--previous URL]    (after `make tiles`; default URL: the live data)
+Usage: python -m szelveny.refresh [--previous URL]    (after `make tiles`; default URL: the live data)
 
 Reads web/public/data/ (just built) and the published meta/summary.json + changes.json.
 Writes data/out/refresh/report.md (the weekly note) and data/out/refresh/status
@@ -20,10 +20,10 @@ from urllib.parse import urlparse
 
 import requests
 
-from borna.config import DATA_OUT
-from borna.tiles import WEB_DATA
+from szelveny.config import DATA_OUT
+from szelveny.tiles import WEB_DATA
 
-LIVE_DATA = "https://data.bornakm.ro"
+LIVE_DATA = "https://data.szelveny.hu"
 OUT = DATA_OUT / "refresh"
 HISTORY_KEEP = 104  # weeks of changes kept in changes.json (two years)
 
@@ -32,19 +32,17 @@ CHECKPOINT_MAX_M = 50          # every public checkpoint (tests/lrs_checkpoints.
 HOLDOUT_SHARE_DROP = 0.05      # held-out milestones within 50 m may fall at most 5 points
 HOLDOUT_MEDIAN_MAX_M = 25
 ROAD_COUNT_DROP = 0.01         # at most 1% of roads may disappear in a week
-CATEGORY_KM_DROP = 0.02        # mapped km per category (A, DX, DN) may fall at most 2%
-MAIN_ROAD_DROP_KM = 5          # an A/DX road losing more than 5 km and 10% is suspicious
+CATEGORY_KM_DROP = 0.02        # mapped km per category (M, F) may fall at most 2%
+MAIN_ROAD_DROP_KM = 5          # an M road losing more than 5 km and 10% is suspicious
 MAIN_ROAD_DROP_SHARE = 0.10
-NOTABLE_KM = 1.0               # A/DX/DN length changes reported in the note
-REGISTER_STALE_DAYS = 45       # nudge to refresh the saved HG 540 copy after this long
-MAIN = ("A", "DX")
+NOTABLE_KM = 1.0               # M/F length changes reported in the note
+MAIN = ("M",)
 # Public sources that were offline; each weekly note says whether they are back. Information
 # only: never holds a run back. Remove an entry once its source is used.
 WATCH = (
     ("TENtec (EU TEN-T network)", "https://tentec.transport.ec.europa.eu/"),
-    ("ANCPI geoportal (0.5 m orthophoto)", "https://geoportal.ancpi.ro/"),
 )
-NATIONAL = ("A", "DX", "DN")
+NATIONAL = ("M", "F")
 
 
 def summarize(web_data=WEB_DATA, lrs_out=DATA_OUT / "lrs") -> dict:
@@ -102,7 +100,7 @@ def compare(prev: dict | None, cur: dict) -> dict:
     status = [{"key": k, "from": old[k]["status"], "to": roads[k]["status"]}
               for k in changed if old[k]["status"] != roads[k]["status"]
               and "osm_only" not in (old[k]["status"], roads[k]["status"])]
-    # Roads taken from OSM because HG 540 lacked them, now in the register: official km from now on.
+    # Roads taken from OSM because the official network lacked them, now in it: official km from now on.
     official = sorted(k for k in set(roads) & set(old)
                       if old[k]["status"] == "osm_only" and roads[k]["status"] != "osm_only")
     sources = {k: {"from": prev["sources"].get(k), "to": v}
@@ -173,7 +171,7 @@ def watch(targets=WATCH) -> list[dict]:
 
 def fallbacks(out=None) -> list[dict]:
     """Sources whose server did not answer this week, so their saved copy was used."""
-    from borna import sources as src
+    from szelveny import sources as src
     f = (out or OUT) / "fallbacks"
     if not f.exists():
         return []
@@ -196,7 +194,7 @@ def report(cur: dict, changes: dict, problems: list[str], run_url: str | None,
              f"{cur['sources'].get('osm', '?')} · {changes['roads']:,} roads"), ""]
     if held:
         lines += [("The checks below failed, so **last week's data stays online**. "
-                  "Nothing on bornakm.ro changed."), ""]
+                  "Nothing on szelveny.hu changed."), ""]
         lines += [f"- {p}" for p in problems] + [""]
     if changes["baseline"]:
         lines += ["First run: this export is the baseline for next week's comparison.", ""]
@@ -212,7 +210,7 @@ def report(cur: dict, changes: dict, problems: list[str], run_url: str | None,
             d = r["to"] - r["from"]
             lines.append(f"- {r['key']}: {_km(r['from'])} → {_km(r['to'])} ({d:+.1f} km)")
         for k in changes["official"]:
-            lines.append(f"- **{k} is now in HG 540/2000**: official km replace the OSM estimate")
+            lines.append(f"- **{k} is now in the official network**: official km replace the OSM estimate")
         for r in changes["status"]:
             lines.append(f"- {r['key']}: network status {r['from']} → {r['to']}")
         for k, v in sorted(changes["sources"].items()):
@@ -233,18 +231,14 @@ def report(cur: dict, changes: dict, problems: list[str], run_url: str | None,
     osm_only = sorted(k for k, r in cur["roads"].items() if r["status"] == "osm_only")
     if osm_only:
         lines += ["", "### Waiting for official data",
-                  (f"{len(osm_only)} national roads are open in OpenStreetMap but not in HG 540/2000 "
-                   f"(consolidation {cur['sources'].get('hg540', '?')}), so they are shown with "
-                   "estimated km: " + ", ".join(osm_only) + ".")]
-        reg = next((f for f in saved if f["id"] == "hg540"), None)
-        if reg and reg["retrieved"] != "?" and \
-                (date.today() - date.fromisoformat(reg["retrieved"])).days > REGISTER_STALE_DAYS:
-            lines.append(f"The saved HG 540 copy is from {reg['retrieved']}: run "
-                         "`make download SOURCES=hg540 snapshot-raw` on your Mac to look for amendments.")
+                  (f"{len(osm_only)} roads are in OpenStreetMap but not in the official network "
+                   f"(NAP {cur['sources'].get('nap', 'not loaded')}), so they are shown with "
+                   "estimated km: " + ", ".join(osm_only[:50]) +
+                   (f" and {len(osm_only) - 50} more" if len(osm_only) > 50 else "") + ".")]
     if saved:
         lines += ["", "### Saved copies used",
                   ("These servers refused the CI machine, so the copies your Mac saved were used "
-                   "(the Mac helper refreshes OSM and HG 540 weekly while the Mac is awake).")]
+                   "(the Mac helper refreshes OSM weekly while the Mac is awake).")]
         for f in saved:
             lines.append(f"- {f['id']}: version {f['version']}, saved {f['retrieved']}")
     if waiting:
@@ -282,7 +276,7 @@ def _fetch_json(url: str):
 
 
 def main(argv: list[str]) -> int:
-    ap = argparse.ArgumentParser(prog="borna.refresh")
+    ap = argparse.ArgumentParser(prog="szelveny.refresh")
     ap.add_argument("--previous", default=LIVE_DATA, help="base URL of the published data")
     ap.add_argument("--run-url", help="link to the CI run, for the note")
     args = ap.parse_args(argv)
