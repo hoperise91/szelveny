@@ -17,7 +17,7 @@ RUN  := cd pipeline && ../$(PY) -m
 SOURCES ?=   # e.g. make download SOURCES=osm (default: all)
 
 .DEFAULT_GOAL := help
-.PHONY: help setup check-tools db-up db-down db-reset psql download import lrs attributes objects qa tiles web-dev web-build refresh deploy-data snapshot-raw restore-raw fetch-install fetch-uninstall test
+.PHONY: help setup check-tools db-up db-down db-reset psql download import nap lrs attributes objects qa tiles web-dev web-build refresh deploy-data snapshot-raw restore-raw fetch-install fetch-uninstall test
 
 help: ## Show this help
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -57,6 +57,9 @@ download: setup ## Fetch open sources into data/raw/ (SOURCES=osm overture gisco
 import: setup db-up ## Load data/raw/ into PostGIS (raw schema)
 	$(RUN) szelveny.importer $(SOURCES)
 
+nap: setup db-up ## Fetch the subscribed NAP packages (weekly at most) and load raw.nap_* (ARGS=--load-only)
+	$(RUN) szelveny.nap $(ARGS)
+
 lrs: setup db-up ## Build roads from OSM numbers and calibrate km (OSM-only roads, fallback)
 	$(RUN) szelveny.lrs $(ARGS)
 
@@ -83,7 +86,7 @@ refresh: setup ## Compare the new export with the live one, run the checks, writ
 
 R2_BUCKET ?= szelveny-data
 R2_RAW_BUCKET ?= szelveny-raw
-SLOW_SOURCES := gisco
+SLOW_SOURCES := gisco nap
 SAVED_SOURCES := osm $(SLOW_SOURCES)   # copies in the private bucket, for when a server refuses CI
 # rclone reads its R2 remote from the environment; keys stay out of the echoed command.
 R2_ENV = RCLONE_CONFIG_R2_TYPE=s3 RCLONE_CONFIG_R2_PROVIDER=Cloudflare \

@@ -65,6 +65,11 @@ jobs:
             timeout 600 make download SOURCES=$s || { make restore-raw S=$s && echo $s >> data/out/refresh/fallbacks; }
           done
           make import
+          # NAP: start from the saved copies (CI has no data/ between runs), so the weekly guard
+          # in nap.py sees last week's retrieval and the site keeps working if NAP is unreachable
+          # or the account is suspended (ÁSZF §38).
+          make restore-raw S=nap || true
+          make nap || echo nap >> data/out/refresh/fallbacks
 
       - name: Build the network
         run: |
