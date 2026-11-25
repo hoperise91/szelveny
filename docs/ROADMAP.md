@@ -43,9 +43,9 @@
 **Next session (when szelvenykm.hu is the owner's):**
 1. Owner adds szelvenykm.hu to Cloudflare as a site and sets Cloudflare's nameservers at the registrar. **2026-11-25:** zone added on Cloudflare (Lanisys parking A/AAAA/www records dropped; null MX and `v=spf1 -all` kept), nameservers `isabel.ns.cloudflare.com` and `langston.ns.cloudflare.com`; delegation changed by LaniSys (ticket #726) the same evening, live at the registry 20:31 EET. DNSSEC is off (no DS at the registry).
 2. Pages project `szelveny` → Custom domains: `szelvenykm.hu` and `www.szelvenykm.hu`. **Done 2026-11-25.**
-3. R2 `szelveny-data` → Custom domain `data.szelvenykm.hu`; then disable the r2.dev URL; cache rule on `data.szelvenykm.hu` as for Bornă (edge 1 h, browser 10 min). **Done 2026-11-25** (custom domain + cache rule `data`; r2.dev stays on until the site is checked on the new domain).
+3. R2 `szelveny-data` → Custom domain `data.szelvenykm.hu`; then disable the r2.dev URL; cache rule on `data.szelvenykm.hu` as for Bornă (edge 1 h, browser 10 min). **Done 2026-11-25** (custom domain + cache rule `data`; r2.dev URL disabled after the site was checked on the new domain).
 4. Pages env: delete `PUBLIC_SITE_URL`, set `PUBLIC_DATA_URL=https://data.szelvenykm.hu`; redeploy. **Done 2026-11-25** (Production env).
-5. Email Routing for `contact@szelvenykm.hu` → the owner's inbox; Web Analytics; Search Console + Bing with the sitemap.
+5. Email Routing for `contact@szelvenykm.hu` → the owner's inbox; Web Analytics; Search Console + Bing with the sitemap. **Email Routing and Web Analytics done 2026-11-25** (`contact@` → the owner's Gmail, as for Bornă; the null MX and `v=spf1 -all` placeholders were replaced by Cloudflare's MX, SPF and DKIM records; Web Analytics automatic setup). **Still to do:** Search Console + Bing with `https://szelvenykm.hu/sitemap.xml`.
 6. Optional: make the GitHub repo public (like Bornă); add szelvenykm.hu to the MapTiler key's allowed origins.
 Open product items: Phase 4 search page (`/kereses` answer panel), per-county downloads (NAP and OSM layers as separate files, the NC tables labelled), local-street search (later, owner's call), contacting the OSM community about `nap_osm_offsets.csv` (not now).
 
