@@ -41,10 +41,10 @@
 **Result (2026-11-24): Present.** *Országos közúthálózat* (GeoPackage, 22,341 sections, native EPSG:23700) has `kszam` (road number), `pkod` (carriageway 0/1/2), `kutka` (category), `kszelv`/`vszelv` (start/end szelvény as `"km + m"`, e.g. `"2 + 548"`) and `szho` (registered length, m) on every row. Geometry check: 98% of sections are within 2% of `szho` and per-category totals agree within ~1 km (36,250 km incl. both carriageways of dual roads, cycle paths and junction ramps). The attribute packages use the same `kszam`/`pkod`/`kszelv`/`vszelv` keys, so they attach as linear events without map matching.
 
 **Next session (when szelvenykm.hu is the owner's):**
-1. Owner adds szelvenykm.hu to Cloudflare as a site and sets Cloudflare's nameservers at the registrar. **2026-11-25:** zone added on Cloudflare (Lanisys parking A/AAAA/www records dropped; null MX and `v=spf1 -all` kept), nameservers `isabel.ns.cloudflare.com` and `langston.ns.cloudflare.com`; delegation change requested from LaniSys, ticket #726. DNSSEC is off (no DS at the registry).
-2. Pages project `szelveny` → Custom domains: `szelvenykm.hu` and `www.szelvenykm.hu`.
-3. R2 `szelveny-data` → Custom domain `data.szelvenykm.hu`; then disable the r2.dev URL; cache rule on `data.szelvenykm.hu` as for Bornă (edge 1 h, browser 10 min).
-4. Pages env: delete `PUBLIC_SITE_URL`, set `PUBLIC_DATA_URL=https://data.szelvenykm.hu`; redeploy.
+1. Owner adds szelvenykm.hu to Cloudflare as a site and sets Cloudflare's nameservers at the registrar. **2026-11-25:** zone added on Cloudflare (Lanisys parking A/AAAA/www records dropped; null MX and `v=spf1 -all` kept), nameservers `isabel.ns.cloudflare.com` and `langston.ns.cloudflare.com`; delegation changed by LaniSys (ticket #726) the same evening, live at the registry 20:31 EET. DNSSEC is off (no DS at the registry).
+2. Pages project `szelveny` → Custom domains: `szelvenykm.hu` and `www.szelvenykm.hu`. **Done 2026-11-25.**
+3. R2 `szelveny-data` → Custom domain `data.szelvenykm.hu`; then disable the r2.dev URL; cache rule on `data.szelvenykm.hu` as for Bornă (edge 1 h, browser 10 min). **Done 2026-11-25** (custom domain + cache rule `data`; r2.dev stays on until the site is checked on the new domain).
+4. Pages env: delete `PUBLIC_SITE_URL`, set `PUBLIC_DATA_URL=https://data.szelvenykm.hu`; redeploy. **Done 2026-11-25** (Production env).
 5. Email Routing for `contact@szelvenykm.hu` → the owner's inbox; Web Analytics; Search Console + Bing with the sitemap.
 6. Optional: make the GitHub repo public (like Bornă); add szelvenykm.hu to the MapTiler key's allowed origins.
 Open product items: Phase 4 search page (`/kereses` answer panel), per-county downloads (NAP and OSM layers as separate files, the NC tables labelled), local-street search (later, owner's call), contacting the OSM community about `nap_osm_offsets.csv` (not now).
