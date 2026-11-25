@@ -4,7 +4,7 @@ Hungary's open road database: an NVDB-style portal, sister site to **Bornă** (h
 
 *Working name "Szelvény" (Hungarian for road chainage, as in "M1 12+300"). The owner may rename it; update this file, the README and the site title together.*
 
-**Where we are (2026-11-24):** Phases 0–3 done; live at **https://szelveny.pages.dev** (Cloudflare Pages from GitHub `hoperise91/szelveny`, private; data on R2 `szelveny-data` via its r2.dev URL; weekly refresh on GitHub Actions, Mondays 03:00 UTC). Waiting for the domain **szelvenykm.hu** (ordered at hungariandomains.com / Lanisys Kft.; the owner emailed them because the order page never confirmed). When it is the owner's: add it to Cloudflare, then follow "Next session" in `docs/ROADMAP.md`. Deploy: code → `git push`; data → `make tiles deploy-data`.
+**Where we are (2026-11-25):** Phases 0–3 done; live at **https://szelveny.pages.dev** (Cloudflare Pages from GitHub `hoperise91/szelveny`, private; data on R2 `szelveny-data` via its r2.dev URL; weekly refresh on GitHub Actions, Mondays 03:00 UTC). Domain **szelvenykm.hu** is the owner's (registrar HungaryDomain.com / LaniSys Kft., renews every 24 November). It's added to Cloudflare (nameservers `isabel`/`langston.ns.cloudflare.com`); the delegation change was requested from LaniSys (ticket #726, 2026-11-25) because their panel can't change nameservers. Once `dig NS szelvenykm.hu @a.hu.` shows Cloudflare, follow "Next session" in `docs/ROADMAP.md` from step 2. Deploy: code → `git push`; data → `make tiles deploy-data`.
 
 The owner prefers a simple, calm, easy UI and checks results against reality: verify geometry, not just totals.
 
